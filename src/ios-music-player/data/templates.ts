@@ -900,4 +900,243 @@ export const TEMPLATES: Template[] = [
     // di toolbar (lihat customLyricsLayers di Editor.tsx).
     lyricsTextLayers: [],
   },
+  {
+    // Template baru: "Control Center Music Player" — diadaptasi dari
+    // mockup Control Center iOS 26 (lihat control-center-music-player/
+    // di root repo), TAPI cuma kartu music player-nya doang yang dipakai.
+    // Bingkai HP, status bar, Dynamic Island, & kartu Control Center lain
+    // di sekitarnya SENGAJA tidak diikutkan — cuma widget kartunya yang
+    // "mengambang" di atas solidBackground polos, mirip gaya "iPhone
+    // Music Player" tapi tanpa ilusi lockscreen di belakangnya.
+    // Variant SOLID (card gelap pekat, bukan kaca) — lihat variant
+    // "-glass" di bawah buat versi kaca/translucent-nya.
+    id: "control-center-music-player",
+    name: "Control Center Player",
+    duration: "0:15",
+    gradientFrom: "#2C2C2E",
+    gradientTo: "#0A0A0C",
+    previewImage: "/templates/control-center-music-player/preview.jpg",
+    canvasWidth: 1080,
+    canvasHeight: 1920,
+    // Tanpa baseAssetSrc (tanpa foto lockscreen) — background cuma warna
+    // solid gelap polos, biar fokus penuh ke kartu player-nya.
+    solidBackground: "#0A0A0C",
+    decorLayers: [
+      {
+        id: "card",
+        label: "Card Player",
+        assetSrc: "/templates/control-center-music-player/card.png",
+        order: "back",
+        opacity: 100,
+        adjustable: true,
+      },
+      {
+        id: "icon",
+        label: "Badge Device",
+        assetSrc: "/templates/control-center-music-player/icon.png",
+        order: "front",
+      },
+      {
+        id: "progressbar",
+        label: "Progress bar",
+        assetSrc: "/templates/control-center-music-player/progressbar.png",
+        order: "front",
+        hideInWaveformMode: true,
+      },
+      {
+        id: "musicplayer",
+        label: "Kontrol",
+        assetSrc: "/templates/control-center-music-player/musicplayer.png",
+        order: "front",
+      },
+    ],
+    slots: [
+      {
+        id: "sampul",
+        type: "image",
+        label: "Foto sampul",
+        x: 15.03,
+        y: 15.59,
+        width: 69.94,
+        height: 39.34,
+        startSec: 0,
+        endSec: 15,
+        radius: 16,
+        sampleSrc: "/templates/control-center-music-player/sample-cover.jpg",
+      },
+      {
+        id: "audio1",
+        type: "audio",
+        label: "Musik latar",
+        startSec: 0,
+        endSec: 15,
+      },
+    ],
+    textLayers: [
+      {
+        id: "title",
+        label: "Judul",
+        defaultText: "PLERRR",
+        x: 15.15,
+        y: 61.05,
+        fontSize: 43,
+        fontWeight: 700,
+        color: "#FFFFFF",
+        align: "left",
+        maxLength: 30,
+      },
+      {
+        id: "artist",
+        label: "Artist",
+        defaultText: "@artist",
+        x: 15.15,
+        y: 63.7,
+        fontSize: 35,
+        fontWeight: 500,
+        color: "rgba(255,255,255,0.65)",
+        align: "left",
+        maxLength: 30,
+      },
+    ],
+    durationLayer: {
+      currentX: 15.15,
+      currentY: 69.78,
+      totalX: 84.85,
+      totalY: 69.78,
+      fontSize: 32,
+      fontWeight: 500,
+      color: "rgba(255,255,255,0.7)",
+    },
+    progressLayer: {
+      x1: 15.03,
+      x2: 84.97,
+      y: 66.86,
+      thickness: 19,
+      color: "#FFFFFF",
+    },
+  },
+  {
+    // Duplikat "Control Center Player" — posisi/ukuran slot, teks,
+    // progress dsb PERSIS SAMA. Bedanya cuma card.png: versi ini "kaca"
+    // (translucent/frosted) + dirender LIVE pakai mesin liquidGlass
+    // (sama kayak "iPhone Music Player Glass"), card.png di sini cuma
+    // fallback kalau browser tidak dukung filter SVG di canvas.
+    id: "control-center-music-player-glass",
+    name: "Control Center Player Glass",
+    duration: "0:15",
+    gradientFrom: "#33465C",
+    gradientTo: "#0A0A0C",
+    previewImage: "/templates/control-center-music-player-glass/preview.jpg",
+    canvasWidth: 1080,
+    canvasHeight: 1920,
+    solidBackground: "#0A0A0C",
+    decorLayers: [
+      {
+        id: "card",
+        label: "Card Player (Glass)",
+        assetSrc: "/templates/control-center-music-player-glass/card.png",
+        order: "back",
+        opacity: 100,
+        adjustable: true,
+        liquidGlass: {
+          x: 8.33,
+          y: 11.82,
+          width: 83.33,
+          height: 83.7,
+          cornerRadius: 86,
+          settings: {
+            mode: "standard",
+            displacementScale: 70,
+            blurAmount: 0.5,
+            saturation: 140,
+            aberrationIntensity: 2,
+            overLight: false,
+          },
+        },
+      },
+      {
+        id: "icon",
+        label: "Badge Device",
+        assetSrc: "/templates/control-center-music-player-glass/icon.png",
+        order: "front",
+      },
+      {
+        id: "progressbar",
+        label: "Progress bar",
+        assetSrc: "/templates/control-center-music-player-glass/progressbar.png",
+        order: "front",
+        hideInWaveformMode: true,
+      },
+      {
+        id: "musicplayer",
+        label: "Kontrol",
+        assetSrc: "/templates/control-center-music-player-glass/musicplayer.png",
+        order: "front",
+      },
+    ],
+    slots: [
+      {
+        id: "sampul",
+        type: "image",
+        label: "Foto sampul",
+        x: 15.03,
+        y: 15.59,
+        width: 69.94,
+        height: 39.34,
+        startSec: 0,
+        endSec: 15,
+        radius: 16,
+        sampleSrc: "/templates/control-center-music-player-glass/sample-cover.jpg",
+      },
+      {
+        id: "audio1",
+        type: "audio",
+        label: "Musik latar",
+        startSec: 0,
+        endSec: 15,
+      },
+    ],
+    textLayers: [
+      {
+        id: "title",
+        label: "Judul",
+        defaultText: "PLERRR",
+        x: 15.15,
+        y: 61.05,
+        fontSize: 43,
+        fontWeight: 700,
+        color: "#FFFFFF",
+        align: "left",
+        maxLength: 30,
+      },
+      {
+        id: "artist",
+        label: "Artist",
+        defaultText: "@artist",
+        x: 15.15,
+        y: 63.7,
+        fontSize: 35,
+        fontWeight: 500,
+        color: "rgba(255,255,255,0.65)",
+        align: "left",
+        maxLength: 30,
+      },
+    ],
+    durationLayer: {
+      currentX: 15.15,
+      currentY: 69.78,
+      totalX: 84.85,
+      totalY: 69.78,
+      fontSize: 32,
+      fontWeight: 500,
+      color: "rgba(255,255,255,0.7)",
+    },
+    progressLayer: {
+      x1: 15.03,
+      x2: 84.97,
+      y: 66.86,
+      thickness: 19,
+      color: "#FFFFFF",
+    },
+  },
 ];
