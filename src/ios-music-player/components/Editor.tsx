@@ -827,7 +827,10 @@ function TextPresetLoopPreview({ preset }: { preset: TextStylePreset }) {
 // preview + tab Media/Audio) begitu user pencet "Gunakan template". Editor
 // penuh tetap bisa dibuka lewat tombol "Lanjutan". Tambah id template lain
 // di sini kalau mau ikut pakai mode ini.
-const QUICK_EDIT_TEMPLATE_IDS = new Set(["iphone-music-player-v4"]);
+const QUICK_EDIT_TEMPLATE_IDS = new Set([
+  "iphone-music-player-v4",
+  "iphone-music-player-v6",
+]);
 
 export default function Editor({
   template,
