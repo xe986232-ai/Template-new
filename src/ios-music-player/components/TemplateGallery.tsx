@@ -463,6 +463,12 @@ export default function TemplateGallery({
    *  (undefined) = project baru dari template polos seperti biasa. */
   onSelect: (template: Template, draftId?: string) => void;
 }) {
+  // BIJI PLER (lihat data/templates.ts) sekarang "dipinjemin" widget IOS 26
+  // Music Player sepenuhnya -- klik kartunya langsung navigate ke
+  // /template/ios26-music-player, BUKAN buka <Editor>/preview modal kayak
+  // kartu lain. Template lain gak kesentuh sama sekali.
+  const navigate = useNavigate();
+
   // Set berisi id template yang lagi DINONAKTIFIN dari dashboard admin
   // (config/templates/{id}/enabled === false). Template yang ada di sini
   // langsung di-hide total dari galeri, bukan cuma digrayscale kayak
@@ -759,7 +765,11 @@ export default function TemplateGallery({
               key={template.id}
               template={template}
               index={i + 1}
-              onSelect={(t, origin) => setPreview({ template: t, origin })}
+              onSelect={
+                template.id === "biji-pler"
+                  ? () => navigate("/template/ios26-music-player")
+                  : (t, origin) => setPreview({ template: t, origin })
+              }
             />
           ))}
         </div>
