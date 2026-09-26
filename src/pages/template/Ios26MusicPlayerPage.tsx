@@ -97,15 +97,17 @@ export default function Ios26MusicPlayerPage() {
   const [activeTab, setActiveTab] = useState<Ios26EditorTab | null>(null);
   const [exportNotice, setExportNotice] = useState(false);
   const widgetWrapRef = useRef<HTMLDivElement>(null);
-  // Boks bingkai preview & editor -- ukurannya dihitung manual (lihat
-  // useContainFitFrame di atas) biar SELALU beneran 9:16, gak lagi pakai
-  // max-w/max-h tebak-tebakan yang beda sendiri antara mode preview & editor.
-  // fillFactor = 1 -- boks ngisi penuh area flex-nya (contain-fit ke
-  // rasio), PERSIS kayak canvas preview V4 (QuickEditScreen), margin di
-  // sekeliling cukup dari padding container (px-4/px-6), bukan dari
-  // fillFactor < 1 lagi.
-  const { areaRef: previewFrameAreaRef, size: previewFrameSize } = useContainFitFrame(IOS26_CANVAS_RATIO, 0.7);
-  const { areaRef: editorFrameAreaRef, size: editorFrameSize } = useContainFitFrame(IOS26_CANVAS_RATIO, 0.7);
+  // Boks bingkai preview & editor -- PERSIS niru mekanisme canvas preview
+  // V4 (PreviewMirror di QuickEditScreen.tsx): boks ngisi PENUH ruang
+  // available (contain-fit ke rasio, fillFactor 1, TANPA disusutin lagi
+  // & TANPA scale transform manual di kontennya) -- konten widget (SVG)
+  // udah otomatis nyesuain sendiri ke ukuran boks (lihat .stage/.cc svg
+  // { width:100%; height:100% } di widget.css), sama kayak canvas V4 yang
+  // digambar ulang pas ukuran boksnya (bukan boksnya yang disusutin).
+  // Margin di sekeliling cukup dari padding container (px-4 py-1, SAMA
+  // persis kayak wrapper PreviewMirror di QuickEditScreen).
+  const { areaRef: previewFrameAreaRef, size: previewFrameSize } = useContainFitFrame(IOS26_CANVAS_RATIO, 1);
+  const { areaRef: editorFrameAreaRef, size: editorFrameSize } = useContainFitFrame(IOS26_CANVAS_RATIO, 1);
   // Handle imperatif ke widget -- dipakai baris <PlaybackBar> bersama di
   // bawah preview buat togglePlay()/seek() ASLI (lihat Widget.tsx), bukan
   // tiruan state terpisah.
@@ -203,7 +205,7 @@ export default function Ios26MusicPlayerPage() {
           </div>
         </div>
 
-        <div ref={previewFrameAreaRef} className="relative z-0 flex min-h-0 flex-1 items-center justify-center overflow-hidden px-4 py-2">
+        <div ref={previewFrameAreaRef} className="relative z-0 flex min-h-0 flex-1 items-center justify-center overflow-hidden px-4 py-1">
           <div
             className="relative flex items-center justify-center overflow-hidden rounded-xl border border-black bg-black"
             style={
@@ -304,7 +306,7 @@ export default function Ios26MusicPlayerPage() {
           editor V4 juga punya latar bergradasi di belakang frame HP). */}
       <div
         ref={editorFrameAreaRef}
-        className="relative z-0 flex min-h-0 flex-1 items-center justify-center overflow-hidden px-6 py-2"
+        className="relative z-0 flex min-h-0 flex-1 items-center justify-center overflow-hidden px-4 py-1"
         style={{ background: 'radial-gradient(120% 90% at 50% 30%, rgba(139,147,240,0.35), rgba(0,0,0,0) 65%)' }}
       >
         <div
