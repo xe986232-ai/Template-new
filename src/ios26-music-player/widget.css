@@ -26,7 +26,16 @@
 }
 
 .cc26-stage-col { flex-shrink: 0; }
-.stage { position: relative; width: min(450px, 92vw); aspect-ratio: 450 / 920; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; }
+/* Dulu .stage maksa rasio 450/920 sendiri (width: min(450px,92vw) +
+   aspect-ratio) -- itu KONFLIK sama bingkai 9:16 di halaman pembungkus
+   (Ios26MusicPlayerPage.tsx), bikin widget-nya lebih "gemuk" dari bingkai
+   dan kepotong atas-bawah pas di-render. Sekarang .stage cuma ngisi 100%
+   bingkainya (yang udah pasti 9:16); SVG di dalam (.cc/.player, masing2
+   punya viewBox sendiri) otomatis nge-"contain" (preserveAspectRatio
+   default: xMidYMid meet) -- diskalain & di-center biar keliatan utuh,
+   ada spasi kosong tipis di kiri-kanan kalau perlu, TAPI GAK PERNAH
+   kepotong. */
+.stage { position: relative; width: 100%; height: 100%; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; }
 .cc { position: absolute; inset: 0; }
 .cc svg { width: 100%; height: 100%; display: block; }
 /* Player menutupi area layar HP: x=24..426, y=23..897 dari canvas 450x920 */
