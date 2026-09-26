@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { Check } from 'lucide-react';
 import { STAGE_MARKUP, PANELS_MARKUP } from './markup';
+import { EditorSheet } from '../components/editor/TemplateEditorTabs';
 import './widget.css';
 
 // Widget IOS 26 Music Player: Control Center flat-dark, kartu audio kanan
@@ -546,22 +546,24 @@ export default function Ios26MusicPlayerWidget({ activeTab, activeTabLabel, onCl
   return (
     <div className="cc26-root" ref={rootRef}>
       <div id="stage" className="cc26-stage-col stage" dangerouslySetInnerHTML={{ __html: STAGE_MARKUP }} />
-      <div className={`cc26-panel-sheet${activeTab ? ' open' : ''}`}>
-        {activeTab && (
-          <div className="cc26-panel-head">
-            <span>{activeTabLabel}</span>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Selesai"
-              className="cc26-panel-close"
-            >
-              <Check size={15} strokeWidth={2.6} />
-            </button>
-          </div>
-        )}
-        <div className="cc26-panel-body" dangerouslySetInnerHTML={{ __html: PANELS_MARKUP }} />
-      </div>
+      {/* Sheet-nya sekarang komponen generik EditorSheet (lihat
+          src/components/editor/TemplateEditorTabs.tsx) -- posisi/animasi
+          slide/header "Selesai"-nya udah gak ditulis manual di sini lagi,
+          template lain yang butuh sheet serupa tinggal pakai komponen yang
+          sama. Isi panel (Media/Audio/Lanjutan) tetap markup SVG-spesifik
+          punya widget ini sendiri, jadi tetap disuntik lewat
+          dangerouslySetInnerHTML sebagai children. */}
+      <EditorSheet
+        open={!!activeTab}
+        title={activeTabLabel}
+        onClose={onClose ?? (() => {})}
+        className="cc26-panel-sheet"
+      >
+        <div
+          className="contents"
+          dangerouslySetInnerHTML={{ __html: PANELS_MARKUP }}
+        />
+      </EditorSheet>
     </div>
   );
 }

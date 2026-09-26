@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, Sparkles, Music2, Image as ImageIcon, SlidersHorizontal, Download } from 'lucide-react';
 import Ios26MusicPlayerWidget, { type Ios26EditorTab } from '../../ios26-music-player/Widget';
+import { EditorTabBar, toggleEditorTab, type EditorTabDef } from '../../components/editor/TemplateEditorTabs';
 import { tokens } from '../../designTokens';
 
 // Halaman berdiri sendiri buat template "IOS 26 Music Player": widget
@@ -32,6 +33,14 @@ export default function Ios26MusicPlayerPage() {
     requestAnimationFrame(() => {
       widgetWrapRef.current?.querySelector<HTMLButtonElement>('#uploadAudioBtn')?.click();
     });
+  };
+
+  // Toggle ala tombol "Lanjutan" di V4 (lihat toggleEditorTab): klik tab
+  // yang lagi aktif -> tutup sheet-nya; klik tab lain -> ganti isi sheet
+  // (tetep kebuka). Logic-nya dibagi di komponen editor generik, bukan
+  // ditulis manual di sini, biar template lain pakai perilaku yang sama.
+  const handleTabClick = (id: Ios26EditorTab) => {
+    setActiveTab((cur) => toggleEditorTab(cur, id));
   };
 
   if (mode === 'preview') {
@@ -99,18 +108,12 @@ export default function Ios26MusicPlayerPage() {
     );
   }
 
-  const TABS: { id: Ios26EditorTab; label: string; icon: typeof ImageIcon }[] = [
+  const TABS: EditorTabDef<Ios26EditorTab>[] = [
     { id: 'media', label: 'Media', icon: ImageIcon },
     { id: 'audio', label: 'Audio', icon: Music2 },
     { id: 'lanjutan', label: 'Lanjutan', icon: SlidersHorizontal },
   ];
   const activeTabLabel = TABS.find((t) => t.id === activeTab)?.label;
-
-  // Toggle ala tombol "Lanjutan" di V4: klik tab yang lagi aktif -> tutup
-  // sheet-nya; klik tab lain -> ganti isi sheet (tetep kebuka).
-  const handleTabClick = (id: Ios26EditorTab) => {
-    setActiveTab((cur) => (cur === id ? null : id));
-  };
 
   return (
     <div className="fixed inset-0 z-[45] flex flex-col overflow-hidden bg-black" style={{ fontFamily: tokens.fonts.body }}>
@@ -175,30 +178,19 @@ export default function Ios26MusicPlayerPage() {
         </div>
       </div>
 
-      {/* Tab bar bawah -- Media/Audio/Lanjutan. Niru alur V4: klik tombolnya
-          buka sheet yang isinya dirender oleh Widget sendiri (lihat
-          Ios26EditorTab & panel-group di markup.ts/widget.css); klik tab
-          yang lagi aktif (atau tombol "Selesai" di header sheet) nutup
-          sheet-nya lagi. */}
-      <div className="relative z-[60] flex shrink-0 items-center justify-around border-t border-white/10 bg-black px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2">
-        {TABS.map(({ id, label, icon: Icon }) => {
-          const active = activeTab === id;
-          return (
-            <button
-              key={id}
-              type="button"
-              onClick={() => handleTabClick(id)}
-              aria-pressed={active}
-              data-ripple
-              className="flex flex-1 flex-col items-center gap-1 rounded-lg py-1.5 text-[10.5px] font-semibold"
-              style={{ color: active ? tokens.colors.accent : 'rgba(255,255,255,0.5)' }}
-            >
-              <Icon size={18} strokeWidth={active ? 2.4 : 2} />
-              {label}
-            </button>
-          );
-        })}
-      </div>
+      {/* Tab bar bawah -- komponen generik EditorTabBar (lihat
+          src/components/editor/TemplateEditorTabs.tsx), bukan tombol yang
+          ditulis manual lagi -- template mana pun tinggal pasang ini +
+          daftar tabs-nya sendiri. Klik tombolnya buka sheet yang isinya
+          dirender oleh Widget sendiri (lihat Ios26EditorTab & panel-group
+          di markup.ts/widget.css); klik tab yang lagi aktif (atau tombol
+          "Selesai" di header sheet) nutup sheet-nya lagi. */}
+      <EditorTabBar
+        tabs={TABS}
+        activeTab={activeTab}
+        onTabClick={handleTabClick}
+        accentColor={tokens.colors.accent}
+      />
     </div>
   );
 }

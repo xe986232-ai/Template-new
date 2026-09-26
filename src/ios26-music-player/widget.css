@@ -65,71 +65,14 @@
 #playPauseIconGroup.bounce { animation: cc26IconBounce .5s cubic-bezier(.34,1.56,.64,1); }
 
 /* ==== Panel "Lanjutan": customize kartu Music Player & Control Center ====
-   Solid, border tipis, tanpa blur/shadow -- sesuai gaya flat Rizz. */
+   Solid, border tipis, tanpa blur/shadow -- sesuai gaya flat Rizz.
+   Posisi/animasi slide/header "Selesai" udah dipindah ke komponen generik
+   <EditorSheet> (lihat src/components/editor/TemplateEditorTabs.tsx) yang
+   dipasang di Widget.tsx -- di sini tinggal styling ISI panel-nya doang
+   (font, warna, gap antar-group), classname `.cc26-panel-sheet` cuma
+   dipakai buat scoping selector + bawa variable --cc26-accent. */
 .cc26-panel-sheet {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 50;
-  max-height: min(72vh, 620px);
-  overflow-y: auto;
-  background: #000000;
-  border-top: 1px solid rgba(255,255,255,.12);
-  color: #f2f2f7;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-  display: flex;
-  flex-direction: column;
-  transform: translateY(100%);
-  transition: transform .3s ease;
-  /* Ketutup rapat kalau lagi gak ada tab aktif -- biar gak ikut nangkep
-     klik/scroll pas cuma preview doang (niru sheet "Lanjutan" di V4 yang
-     bener-bener ilang, bukan cuma digeser ke bawah viewport). */
-  visibility: hidden;
-}
-.cc26-panel-sheet.open { transform: translateY(0); visibility: visible; }
-
-/* Header sticky: judul tab aktif + tombol "Selesai" (checkmark), niru
-   header sheet "Lanjutan" di QuickEditScreen (V4) -- ini yang bikin sheet
-   bisa ditutup tanpa harus nge-klik ulang tombol tab di bawah. */
-.cc26-panel-head {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 16px 12px;
-  background: #000000;
-  border-bottom: 1px solid rgba(255,255,255,.1);
-}
-.cc26-panel-head span { font-size: 14px; font-weight: 600; }
-.cc26-panel-close {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 999px;
-  border: none;
-  background: var(--cc26-accent);
-  color: #000;
-  cursor: pointer;
-  transition: transform .15s ease;
-}
-.cc26-panel-close:active { transform: scale(.88); }
-
-/* Body: bungkus semua panel-group (Media/Audio/Lanjutan), dipisah dari
-   header di atas biar padding-nya independen. +64px cadangan biar konten
-   paling bawah gak ketutup tab bar Media/Audio/Lanjutan di halaman editor
-   (lihat Ios26MusicPlayerPage.tsx), yang dirender di atas sheet ini
-   (z-index lebih tinggi). */
-.cc26-panel-body {
-  padding: 16px 16px calc(80px + env(safe-area-inset-bottom, 0px));
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
 }
 .cc26-panel-sheet .control-panel { width: 100%; }
 /* Panel-group = isi 1 tab (Media/Audio/Lanjutan) -- cuma yang cocok sama
