@@ -78,7 +78,10 @@
   border-top: 1px solid rgba(255,255,255,.12);
   color: #f2f2f7;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-  padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  /* +64px cadangan biar konten paling bawah gak ketutup tab bar
+     Media/Audio/Lanjutan di halaman editor (lihat Ios26MusicPlayerPage.tsx),
+     yang dirender di atas sheet ini (z-index lebih tinggi). */
+  padding: 16px 16px calc(80px + env(safe-area-inset-bottom, 0px));
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -87,7 +90,10 @@
 }
 .cc26-panel-sheet.open { transform: translateY(0); }
 .cc26-panel-sheet .control-panel { width: 100%; }
-.cc26-panel-sheet .control-panel + .control-panel { margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.1); }
+/* Panel-group = isi 1 tab (Media/Audio/Lanjutan) -- cuma yang cocok sama
+   tab aktif yang ditampilin, lihat activeTab di Widget.tsx. */
+.cc26-panel-sheet .panel-group { display: none; }
+.cc26-panel-sheet .panel-group.active { display: block; }
 .cc26-panel-sheet h3 { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
 .cc26-panel-sheet .sub { font-size: 12px; color: rgba(255,255,255,.5); margin-bottom: 14px; }
 .cc26-panel-sheet label { display: block; font-size: 13px; color: rgba(255,255,255,.75); margin-bottom: 6px; }

@@ -19,12 +19,15 @@ import './widget.css';
 // itu punya sistem export/timeline sendiri yang belum dikerjain di sini.
 export type Ios26MusicPlayerWidgetHandle = void;
 
+export type Ios26EditorTab = 'media' | 'audio' | 'lanjutan';
+
 type Props = {
-  /** true = tampilkan panel customize (dikontrol tombol "Lanjutan" di luar). */
-  advancedOpen: boolean;
+  /** Tab yang lagi kebuka di sheet edit (Media/Audio/Lanjutan), atau null
+   *  kalau sheet-nya lagi ketutup (mode preview doang). */
+  activeTab: Ios26EditorTab | null;
 };
 
-export default function Ios26MusicPlayerWidget({ advancedOpen }: Props) {
+export default function Ios26MusicPlayerWidget({ activeTab }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -368,8 +371,13 @@ export default function Ios26MusicPlayerWidget({ advancedOpen }: Props) {
     const timeElapsed = $('timeElapsed');
     const timeRemaining = $('timeRemaining');
     const progressFill = $<SVGRectElement>('progressFill');
-    const SONG_TOTAL = 225; // total durasi 3:45
+    // Nilai default (demo, gak ada musik asli di-upload) -- begitu ada
+    // audio asli, songTotal & elapsed ngikut audio.duration/currentTime
+    // beneran (lihat wiring ctrlAudioFile di bawah).
+    let songTotal = 225; // total durasi 3:45
     let elapsed = 113; // posisi awal 1:53 (sesuai progress di desain)
+    let audioEl: HTMLAudioElement | null = null;
+    let audioObjectUrl: string | null = null;
     let tickTimer: ReturnType<typeof setInterval> | null = null;
 
     function fmtTime(sec: number) {
@@ -378,14 +386,17 @@ export default function Ios26MusicPlayerWidget({ advancedOpen }: Props) {
     }
     function renderDuration() {
       timeElapsed.textContent = fmtTime(elapsed);
-      timeRemaining.textContent = '-' + fmtTime(SONG_TOTAL - elapsed);
-      progressFill.setAttribute('width', ((282 * elapsed) / SONG_TOTAL).toFixed(2));
+      timeRemaining.textContent = '-' + fmtTime(songTotal - elapsed);
+      progressFill.setAttribute('width', ((282 * elapsed) / songTotal).toFixed(2));
     }
     function startTick() {
+      // Demo doang (belum ada musik asli) -- kalau audio asli udah
+      // di-upload, progress ngikut event 'timeupdate' beneran (lihat
+      // wiring ctrlAudioFile), bukan interval palsu ini.
       stopTick();
       tickTimer = setInterval(() => {
         elapsed = elapsed + 1;
-        if (elapsed > SONG_TOTAL) elapsed = 0;
+        if (elapsed > songTotal) elapsed = 0;
         renderDuration();
       }, 1000);
     }
@@ -395,20 +406,104 @@ export default function Ios26MusicPlayerWidget({ advancedOpen }: Props) {
         tickTimer = null;
       }
     }
+    function setBounce() {
+      playPauseIconGroup.classList.remove('bounce');
+      void playPauseIconGroup.offsetWidth; // reflow biar animasi bisa diulang
+      playPauseIconGroup.classList.add('bounce');
+    }
+    function setPlayingIcon(playing: boolean) {
+      playIcon.style.opacity = playing ? '0' : '1';
+      pauseIcon.style.opacity = playing ? '1' : '0';
+    }
     on(playPauseIconGroup, 'animationend', () => {
       playPauseIconGroup.classList.remove('bounce');
     });
     on(playPauseHit, 'click', (e: Event) => {
       e.stopPropagation();
+      setBounce();
+      if (audioEl) {
+        // Ada musik asli -- play/pause elemen <audio> beneran, progress &
+        // durasi di-update lewat event 'timeupdate'/'play'/'pause' di bawah.
+        if (audioEl.paused) audioEl.play().catch(() => {});
+        else audioEl.pause();
+        return;
+      }
+      // Belum ada musik asli -- fallback demo (timer palsu, kayak sebelumnya).
       isPlaying = !isPlaying;
-      playIcon.style.opacity = isPlaying ? '0' : '1';
-      pauseIcon.style.opacity = isPlaying ? '1' : '0';
-      // restart animasi bounce
-      playPauseIconGroup.classList.remove('bounce');
-      void playPauseIconGroup.offsetWidth; // reflow biar animasi bisa diulang
-      playPauseIconGroup.classList.add('bounce');
+      setPlayingIcon(isPlaying);
       if (isPlaying) startTick();
       else stopTick();
+    });
+
+    // ==== Upload musik asli (tab Audio) ====
+    const ctrlAudioFile = $<HTMLInputElement>('ctrlAudioFile');
+    const uploadAudioBtn = $('uploadAudioBtn');
+    const removeAudioBtn = $('removeAudioBtn');
+    const audioFileName = $('audioFileName');
+
+    function teardownAudio() {
+      if (audioEl) {
+        audioEl.pause();
+        audioEl.src = '';
+        audioEl = null;
+      }
+      if (audioObjectUrl) {
+        URL.revokeObjectURL(audioObjectUrl);
+        audioObjectUrl = null;
+      }
+    }
+
+    on(uploadAudioBtn, 'click', (e: Event) => {
+      e.stopPropagation();
+      ctrlAudioFile.click();
+    });
+    on(ctrlAudioFile, 'click', (e: Event) => e.stopPropagation());
+    on(removeAudioBtn, 'click', (e: Event) => {
+      e.stopPropagation();
+      stopTick();
+      teardownAudio();
+      isPlaying = false;
+      setPlayingIcon(false);
+      songTotal = 225;
+      elapsed = 113;
+      renderDuration();
+      ctrlAudioFile.value = '';
+      audioFileName.textContent = 'Belum ada musik -- preview pakai durasi contoh (3:45)';
+      removeAudioBtn.style.display = 'none';
+    });
+    on(ctrlAudioFile, 'change', () => {
+      const file = ctrlAudioFile.files && ctrlAudioFile.files[0];
+      if (!file) return;
+      stopTick();
+      teardownAudio();
+      audioObjectUrl = URL.createObjectURL(file);
+      const el = new Audio(audioObjectUrl);
+      audioEl = el;
+      audioFileName.textContent = file.name;
+      removeAudioBtn.style.display = 'block';
+      on(el, 'loadedmetadata', () => {
+        songTotal = el.duration || songTotal;
+        elapsed = 0;
+        renderDuration();
+      });
+      on(el, 'timeupdate', () => {
+        elapsed = el.currentTime;
+        renderDuration();
+      });
+      on(el, 'play', () => {
+        isPlaying = true;
+        setPlayingIcon(true);
+      });
+      on(el, 'pause', () => {
+        isPlaying = false;
+        setPlayingIcon(false);
+      });
+      on(el, 'ended', () => {
+        isPlaying = false;
+        setPlayingIcon(false);
+        elapsed = 0;
+        renderDuration();
+      });
     });
 
     applyCardStyle();
@@ -423,15 +518,27 @@ export default function Ios26MusicPlayerWidget({ advancedOpen }: Props) {
 
     return () => {
       stopTick();
+      teardownAudio();
       cleanupFns.forEach((fn) => fn());
     };
   }, []);
+
+  // Effect terpisah (bukan digabung ke effect mount-only di atas) -- tiap
+  // activeTab berubah (user pindah tab Media/Audio/Lanjutan atau nutup
+  // sheet-nya), cuma toggle class `.active` di panel-group yang cocok.
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    root.querySelectorAll<HTMLElement>('.panel-group').forEach((el) => {
+      el.classList.toggle('active', el.dataset.group === activeTab);
+    });
+  }, [activeTab]);
 
   return (
     <div className="cc26-root" ref={rootRef}>
       <div id="stage" className="cc26-stage-col stage" dangerouslySetInnerHTML={{ __html: STAGE_MARKUP }} />
       <div
-        className={`cc26-panel-sheet${advancedOpen ? ' open' : ''}`}
+        className={`cc26-panel-sheet${activeTab ? ' open' : ''}`}
         dangerouslySetInnerHTML={{ __html: PANELS_MARKUP }}
       />
     </div>

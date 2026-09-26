@@ -177,9 +177,9 @@ export const STAGE_MARKUP = `
 `;
 
 export const PANELS_MARKUP = `
-  <div class="control-panel">
-    <h3>Customize Music Player Card</h3>
-    <div class="sub">Atur tampilan kartu music player</div>
+  <div class="control-panel panel-group" data-group="media">
+    <h3>Media</h3>
+    <div class="sub">Judul, artis, dan cover kartu music player</div>
 
     <div class="row">
       <div class="row-head"><label for="ctrlSongTitle">Judul Lagu</label></div>
@@ -215,6 +215,24 @@ export const PANELS_MARKUP = `
       <div class="row-head"><label for="ctrlCoverSmooth">Corner Smoothing Cover</label><span class="val" id="valCoverSmooth">0%</span></div>
       <input type="range" id="ctrlCoverSmooth" min="0" max="100" value="0">
     </div>
+  </div>
+
+  <div class="control-panel panel-group" data-group="audio">
+    <h3>Audio</h3>
+    <div class="sub">Upload musik asli buat preview -- durasi & progress bar ngikut file ini</div>
+
+    <div class="row">
+      <div class="row-head"><label>Musik</label></div>
+      <input type="file" id="ctrlAudioFile" accept="audio/*" style="display:none">
+      <button class="reset-btn" id="uploadAudioBtn" style="margin-top:0;">Upload Musik</button>
+      <button class="reset-btn" id="removeAudioBtn" style="margin-top:8px; background:rgba(255,69,58,.18); display:none;">Hapus Musik</button>
+    </div>
+    <div class="sub" id="audioFileName" style="margin-top:-6px;">Belum ada musik -- preview pakai durasi contoh (3:45)</div>
+  </div>
+
+  <div class="control-panel panel-group" data-group="lanjutan">
+    <h3>Customize Music Player Card</h3>
+    <div class="sub">Atur tampilan kartu music player</div>
 
     <div class="row">
       <div class="row-head"><label for="ctrlRadius">Rounded</label><span class="val" id="valRadius">32px</span></div>
@@ -257,16 +275,16 @@ export const PANELS_MARKUP = `
     </div>
 
     <button class="reset-btn" id="resetBtn">Reset ke default</button>
-  </div>
 
-  <div class="control-panel cc-opacity-panel">
-    <h3>Customize Control Center</h3>
-    <div class="sub">Atur opacity semua kartu Control Center</div>
-    <div class="row">
-      <div class="row-head"><label for="ctrlCcOpacity">Opacity Semua Card</label><span class="val" id="valCcOpacity">8%</span></div>
-      <input type="range" id="ctrlCcOpacity" min="0" max="100" value="8">
+    <div class="cc-opacity-panel" style="margin-top:14px; padding-top:14px; border-top:1px solid rgba(255,255,255,.1);">
+      <h3>Customize Control Center</h3>
+      <div class="sub">Atur opacity semua kartu Control Center</div>
+      <div class="row">
+        <div class="row-head"><label for="ctrlCcOpacity">Opacity Semua Card</label><span class="val" id="valCcOpacity">8%</span></div>
+        <input type="range" id="ctrlCcOpacity" min="0" max="100" value="8">
+      </div>
+      <button class="reset-btn" id="resetCcBtn">Reset ke default</button>
     </div>
-    <button class="reset-btn" id="resetCcBtn">Reset ke default</button>
   </div>
 
 `;

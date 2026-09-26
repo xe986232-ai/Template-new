@@ -1,112 +1,188 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, Sparkles, Pencil } from 'lucide-react';
-import Ios26MusicPlayerWidget from '../../ios26-music-player/Widget';
+import { ChevronLeft, Sparkles, Music2, Image as ImageIcon, SlidersHorizontal, Download } from 'lucide-react';
+import Ios26MusicPlayerWidget, { type Ios26EditorTab } from '../../ios26-music-player/Widget';
 import { tokens } from '../../designTokens';
 
-// Halaman berdiri sendiri buat template "IOS 26 Music Player": preview
-// widget Control Center + Music Player yang interaktif (klik kartu audio
-// kanan atas buat buka Music Player), dengan tombol "Gunakan template" di
-// bawah buat masuk mode edit. Halaman ini SENGAJA dipisah, gak numpang di
-// <Editor> punya template lama:
-//  - belum ada timeline/lirik/preset/export PNG/MP4 (nanti aja kalau udah
-//    waktunya) -- yang udah ada baru ALUR EDIT-nya doang: "Gunakan
-//    template" ngebuka panel yang bagian atasnya udah bisa ganti Judul
-//    Lagu, Nama Artis, dan upload Cover/Album Art (lihat markup.ts,
-//    PANELS_MARKUP), baru di bawahnya opsi gaya kartu (radius, opacity,
-//    dll)
-//  - interaksi CC <-> Music Player masih klik manual, bukan auto-transisi
-//    ala timeline video (itu nanti bagian dari engine export)
+// Halaman berdiri sendiri buat template "IOS 26 Music Player": widget
+// Control Center + Music Player asli (SVG hand-drawn, lihat
+// ios26-music-player/Widget.tsx) -- SENGAJA gak numpang di sistem
+// TEMPLATES/Editor (canvas+PNG) yang dipakai template lain, karena widget
+// ini teknologinya beda (SVG hidup, bukan gambar statis).
 //
-// Chrome-nya (pill "(PREVIEW TEMPLATE)", badge nama, tombol) niru persis
-// TemplatePreview.tsx punya template iOS Music Player biasa, biar
-// kelihatan satu keluarga tampilan.
+// Flow-nya niru pola template lain (galeri/preview -> "Gunakan template"
+// -> layar edit dengan tab Media/Audio/Lanjutan di bawah + tombol Tambah
+// musik/Ekspor di atas), cuma isi tab-nya masih terbatas ke yang udah ada
+// di widget: judul/artis/cover (Media), upload musik asli (Audio), dan
+// slider gaya kartu (Lanjutan). Ekspor PNG/MP4 BELUM ada -- ditandai
+// jelas "Segera hadir" daripada pura-pura jalan.
 export default function Ios26MusicPlayerPage() {
   const navigate = useNavigate();
-  const [editOpen, setEditOpen] = useState(false);
+  const [mode, setMode] = useState<'preview' | 'editor'>('preview');
+  const [activeTab, setActiveTab] = useState<Ios26EditorTab>('media');
+  const [exportNotice, setExportNotice] = useState(false);
+  const widgetWrapRef = useRef<HTMLDivElement>(null);
+
+  // "Tambah musik" di header -- langsung buka tab Audio, lalu trigger
+  // tombol upload di dalam sheet-nya (widget yang pegang input file-nya).
+  const handleTambahMusik = () => {
+    setActiveTab('audio');
+    requestAnimationFrame(() => {
+      widgetWrapRef.current?.querySelector<HTMLButtonElement>('#uploadAudioBtn')?.click();
+    });
+  };
+
+  if (mode === 'preview') {
+    return (
+      <div
+        className="fixed inset-0 z-[45] flex flex-col overflow-hidden"
+        style={{ backgroundColor: tokens.colors.pageBackground, fontFamily: tokens.fonts.body }}
+      >
+        <div className="relative z-10 flex shrink-0 items-center gap-3 px-4 pb-1 pt-[max(1rem,env(safe-area-inset-top))]">
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            aria-label="Kembali"
+            data-ripple
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-black text-black transition duration-200 hover:-translate-x-0.5 active:scale-90"
+            style={{ backgroundColor: tokens.colors.pageBackground }}
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <div
+            className="flex h-9 min-w-0 flex-1 items-center rounded-full border border-black px-3.5"
+            style={{ backgroundColor: tokens.colors.pageBackground }}
+          >
+            <p className="truncate text-[10px] font-bold uppercase tracking-widest text-black">
+              (PREVIEW TEMPLATE)
+            </p>
+          </div>
+        </div>
+
+        <div className="relative z-0 flex min-h-0 flex-1 items-center justify-center overflow-hidden px-4 py-2">
+          <div className="relative flex h-full max-h-[640px] w-full max-w-[420px] items-center justify-center overflow-hidden rounded-3xl border border-black bg-black">
+            <Ios26MusicPlayerWidget activeTab={null} />
+          </div>
+        </div>
+
+        <div className="relative z-10 flex flex-col items-start gap-2 px-4 pb-[max(0.875rem,env(safe-area-inset-bottom))] pt-1">
+          <h2
+            className="max-w-full truncate rounded-lg border border-black px-2.5 py-1 text-sm font-bold leading-tight text-black"
+            style={{ backgroundColor: tokens.colors.accent, fontFamily: tokens.fonts.heading, letterSpacing: '-0.25px' }}
+          >
+            IOS 26 Music Player
+          </h2>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="flex items-center gap-1 rounded-full bg-black px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">
+              <Sparkles size={10} strokeWidth={2.5} />
+              Baru -- preview
+            </span>
+            <span className="rounded-full bg-black px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide" style={{ color: tokens.colors.accent }}>
+              Klik kartu audio buat buka Music Player
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setMode('editor')}
+            data-ripple
+            className="mt-1 flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-black text-sm font-bold text-black transition duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
+            style={{ backgroundColor: tokens.colors.accent, fontFamily: tokens.fonts.heading }}
+          >
+            Gunakan template
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const TABS: { id: Ios26EditorTab; label: string; icon: typeof ImageIcon }[] = [
+    { id: 'media', label: 'Media', icon: ImageIcon },
+    { id: 'audio', label: 'Audio', icon: Music2 },
+    { id: 'lanjutan', label: 'Lanjutan', icon: SlidersHorizontal },
+  ];
 
   return (
-    <div
-      className="fixed inset-0 z-[45] flex flex-col overflow-hidden"
-      style={{ backgroundColor: tokens.colors.pageBackground, fontFamily: tokens.fonts.body }}
-    >
-      {/* Overlay atas -- tombol kembali + pill judul, sama persis gayanya
-          kayak TemplatePreview.tsx */}
-      <div className="relative z-10 flex shrink-0 items-center gap-3 px-4 pb-1 pt-[max(1rem,env(safe-area-inset-top))]">
+    <div className="fixed inset-0 z-[45] flex flex-col overflow-hidden bg-black" style={{ fontFamily: tokens.fonts.body }}>
+      {/* Header -- back, Tambah musik, Ekspor. Niru posisi/gaya chrome atas
+          Editor template lain (lihat screenshot V4: pill "Tambah musik" di
+          tengah, tombol pink "Ekspor" di kanan). */}
+      <div className="relative z-20 flex shrink-0 items-center gap-2 px-4 pb-2 pt-[max(1rem,env(safe-area-inset-top))]">
         <button
           type="button"
-          onClick={() => navigate('/')}
+          onClick={() => setMode('preview')}
           aria-label="Kembali"
           data-ripple
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-black text-black transition duration-200 hover:-translate-x-0.5 active:scale-90"
-          style={{ backgroundColor: tokens.colors.pageBackground }}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/15 text-white transition duration-200 hover:-translate-x-0.5 active:scale-90"
         >
           <ChevronLeft size={18} />
         </button>
-        <div
-          className="flex h-9 min-w-0 flex-1 items-center rounded-full border border-black px-3.5"
-          style={{ backgroundColor: tokens.colors.pageBackground }}
-        >
-          <p className="truncate text-[10px] font-bold uppercase tracking-widest text-black">
-            (PREVIEW TEMPLATE)
-          </p>
-        </div>
-      </div>
-
-      {/* Widget-nya sendiri, dibingkai kartu rounded-3xl border-black biar
-          kerasa satu bahasa visual sama kartu template lain di galeri. */}
-      <div className="relative z-0 flex min-h-0 flex-1 items-center justify-center overflow-hidden px-4 py-2">
-        <div className="relative flex h-full max-h-[640px] w-full max-w-[420px] items-center justify-center overflow-hidden rounded-3xl border border-black bg-black">
-          <Ios26MusicPlayerWidget advancedOpen={editOpen} />
-        </div>
-      </div>
-
-      {/* Overlay bawah -- badge nama + chip status + tombol "Gunakan
-          template", gayanya niru bagian bawah TemplatePreview.tsx (nama
-          pill + info chip + tombol aksi pill). Bedanya sama template
-          lain: tombol ini ngebuka panel edit di halaman yang sama
-          (belum masuk Editor/export terpisah). */}
-      <div className="relative z-10 flex flex-col items-start gap-2 px-4 pb-[max(0.875rem,env(safe-area-inset-bottom))] pt-1">
-        <h2
-          className="max-w-full truncate rounded-lg border border-black px-2.5 py-1 text-sm font-bold leading-tight text-black"
-          style={{
-            backgroundColor: tokens.colors.accent,
-            fontFamily: tokens.fonts.heading,
-            letterSpacing: '-0.25px',
-          }}
-        >
-          IOS 26 Music Player
-        </h2>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="flex items-center gap-1 rounded-full bg-black px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">
-            <Sparkles size={10} strokeWidth={2.5} />
-            Baru -- preview
-          </span>
-          <span
-            className="rounded-full bg-black px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide"
-            style={{ color: tokens.colors.accent }}
-          >
-            Klik kartu audio buat buka Music Player
-          </span>
-        </div>
-
         <button
           type="button"
-          onClick={() => setEditOpen((v) => !v)}
-          aria-pressed={editOpen}
+          onClick={handleTambahMusik}
           data-ripple
-          className="mt-1 flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-black text-sm font-bold text-black transition duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
-          style={{ backgroundColor: tokens.colors.accent, fontFamily: tokens.fonts.heading }}
+          className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-full border border-white/15 px-3 text-[12px] font-semibold text-white/85"
         >
-          <Pencil size={16} strokeWidth={editOpen ? 2.4 : 2} />
-          {editOpen ? 'Tutup mode edit' : 'Gunakan template'}
+          <Music2 size={13} />
+          Tambah musik
+        </button>
+        <button
+          type="button"
+          onClick={() => setExportNotice(true)}
+          data-ripple
+          className="flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[12px] font-bold text-black"
+          style={{ backgroundColor: tokens.colors.accent }}
+        >
+          <Download size={13} strokeWidth={2.5} />
+          Ekspor
         </button>
       </div>
 
-      {editOpen && (
-        <div className="fixed inset-0 z-40" onClick={() => setEditOpen(false)} />
+      {exportNotice && (
+        <div className="relative z-20 mx-4 mb-1 rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-[11px] text-white/80">
+          Ekspor PNG/MP4 buat template ini segera hadir -- belum tersedia.
+          <button type="button" className="ml-2 underline" onClick={() => setExportNotice(false)}>
+            Oke
+          </button>
+        </div>
       )}
+
+      {/* Preview widget, dibingkai glow ungu ala referensi iOS 26 (screenshot
+          editor V4 juga punya latar bergradasi di belakang frame HP). */}
+      <div
+        className="relative z-0 flex min-h-0 flex-1 items-center justify-center overflow-hidden px-6 py-2"
+        style={{ background: 'radial-gradient(120% 90% at 50% 30%, rgba(139,147,240,0.35), rgba(0,0,0,0) 65%)' }}
+      >
+        <div
+          ref={widgetWrapRef}
+          className="relative flex h-full max-h-[560px] w-full max-w-[300px] items-center justify-center overflow-hidden rounded-[2.5rem] border border-white/10 bg-black"
+        >
+          <Ios26MusicPlayerWidget activeTab={activeTab} />
+        </div>
+      </div>
+
+      {/* Tab bar bawah -- Media/Audio/Lanjutan, isi tab-nya dirender sebagai
+          sheet oleh Widget sendiri (lihat Ios26EditorTab & panel-group di
+          markup.ts/widget.css). */}
+      <div className="relative z-[60] flex shrink-0 items-center justify-around border-t border-white/10 bg-black px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2">
+        {TABS.map(({ id, label, icon: Icon }) => {
+          const active = activeTab === id;
+          return (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setActiveTab(id)}
+              data-ripple
+              className="flex flex-1 flex-col items-center gap-1 rounded-lg py-1.5 text-[10.5px] font-semibold"
+              style={{ color: active ? tokens.colors.accent : 'rgba(255,255,255,0.5)' }}
+            >
+              <Icon size={18} strokeWidth={active ? 2.4 : 2} />
+              {label}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
