@@ -17,13 +17,15 @@ import {
 } from '../../components/editor/TemplateEditorTabs';
 import { tokens } from '../../designTokens';
 
-// Rasio canvas resmi widget ini: 9:16 (potret) -- SAMA kayak default semua
-// template lain (lihat CanvasRatio "9:16" di ios-music-player/Editor.tsx &
-// QuickEditScreen.tsx, dan CANVAS_RATIOS di pages/editor/EditorTheme1.tsx).
-// Widget IOS 26 cuma SVG hand-drawn potret tetap (viewBox 450x920, gak bisa
-// reflow ke landscape), jadi TIDAK ada switcher 16:9/4:5 kayak template
-// lain -- cuma satu rasio ini yang dipertahanin bener.
-const IOS26_CANVAS_RATIO = 9 / 16; // width / height
+// Rasio canvas widget ini: ngikutin bentuk ASLI SVG-nya sendiri (viewBox
+// 450x920), BUKAN dipaksa 9:16 generik. Sempet dicoba 9:16 (biar "sama"
+// kayak template lain), tapi widget-nya jadi keliatan kayak dua bentuk
+// numpuk -- kotak bingkai lebar 9:16 VS bentuk badan HP asli SVG yang lebih
+// ramping -- jadi ada spasi kosong aneh kiri-kanan & lekukan HP-nya gak
+// nempel ke tepi bingkai. Pakai rasio asli widget = bingkai SELALU pas
+// nempel ke bentuk kontennya sendiri, satu bentuk yang nyatu, sama kayak
+// kartu preview template lain.
+const IOS26_CANVAS_RATIO = 450 / 920; // width / height, dari viewBox STAGE_MARKUP
 
 /** Ngukur ruang yang beneran available di dalam `areaRef` (dikurangin
  *  padding-nya) lewat ResizeObserver, terus hitung ukuran boks (px) yang
@@ -101,8 +103,8 @@ export default function Ios26MusicPlayerPage() {
   // fillFactor < 1 -- boks 9:16-nya disusutin biar ada spasi/margin di
   // sekeliling (kayak kartu preview V4), gak nempel penuh ke atas-bawah
   // area flex-nya walau rasionya udah bener.
-  const { areaRef: previewFrameAreaRef, size: previewFrameSize } = useContainFitFrame(IOS26_CANVAS_RATIO, 0.78);
-  const { areaRef: editorFrameAreaRef, size: editorFrameSize } = useContainFitFrame(IOS26_CANVAS_RATIO, 0.78);
+  const { areaRef: previewFrameAreaRef, size: previewFrameSize } = useContainFitFrame(IOS26_CANVAS_RATIO, 0.85);
+  const { areaRef: editorFrameAreaRef, size: editorFrameSize } = useContainFitFrame(IOS26_CANVAS_RATIO, 0.85);
   // Handle imperatif ke widget -- dipakai baris <PlaybackBar> bersama di
   // bawah preview buat togglePlay()/seek() ASLI (lihat Widget.tsx), bukan
   // tiruan state terpisah.
@@ -206,7 +208,7 @@ export default function Ios26MusicPlayerPage() {
             style={
               previewFrameSize
                 ? { width: previewFrameSize.width, height: previewFrameSize.height }
-                : { width: '100%', maxWidth: 328, aspectRatio: '9 / 16' }
+                : { width: '100%', maxWidth: 358, aspectRatio: '450 / 920' }
             }
           >
             <Ios26MusicPlayerWidget activeTab={null} />
@@ -310,7 +312,7 @@ export default function Ios26MusicPlayerPage() {
           style={
             editorFrameSize
               ? { width: editorFrameSize.width, height: editorFrameSize.height }
-              : { width: '100%', maxWidth: 234, aspectRatio: '9 / 16' }
+              : { width: '100%', maxWidth: 255, aspectRatio: '450 / 920' }
           }
         >
           <Ios26MusicPlayerWidget
