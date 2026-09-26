@@ -857,107 +857,29 @@ export const TEMPLATES: Template[] = [
     },
   },
   {
-    // Template ke-6: "BIJI PLER" — duplikat PERSIS dari V4 (semua layer,
-    // slot, teks, posisi, animasi tombol play/pause, spectrum, dst
-    // disalin apa adanya, asetnya juga hasil copy folder V4 ke folder
-    // sendiri /templates/biji-pler/), cuma id/name/path aset yang beda.
-    // Belum dikustomisasi apa-apa -- tinggal disesuaikan nanti kalau mau
-    // beda dari V4.
+    // Template ke-6: "BIJI PLER" — templatenya TETAP ADA (id/name/slot
+    // media+audio dasar), tapi semua ISI/ASET dikosongkan total: gak ada
+    // decorLayers (card/kontrol/progress/dst), gak ada baseAssetSrc (ganti
+    // solidBackground hitam polos, sama pola kayak template "Lyrics" di
+    // bawah), gak ada textLayers/durationLayer/progressLayer/spectrumLayer.
+    // Folder /templates/biji-pler/ juga udah dikosongin (aset PNG/JPG hasil
+    // duplikat V4 dihapus semua). Tinggal isi ulang manual kalau mau
+    // dikustom dari nol.
     id: "biji-pler",
     name: "BIJI PLER",
     duration: "0:15",
     gradientFrom: "#3A2E5C",
     gradientTo: "#0A090E",
-    previewImage: "/templates/biji-pler/preview.jpg",
     canvasWidth: 1080,
     canvasHeight: 1920,
-    baseAssetSrc: "/templates/biji-pler/bg.jpg",
-    baseAssetType: "image",
-    decorLayers: [
-      {
-        id: "card",
-        label: "Card Player",
-        assetSrc: "/templates/biji-pler/card.png",
-        order: "back",
-        opacity: 35,
-        adjustable: true,
-      },
-      {
-        id: "airplayCard",
-        label: "Card AirPlay",
-        assetSrc: "/templates/biji-pler/airplay-card.png",
-        order: "front",
-        opacity: 17,
-        adjustable: true,
-      },
-      {
-        id: "airplayLogo",
-        label: "Ikon AirPlay",
-        assetSrc: "/templates/biji-pler/airplay-logo.png",
-        order: "front",
-      },
-      {
-        id: "progressbar",
-        label: "Progress bar",
-        assetSrc: "/templates/biji-pler/progressbar.png",
-        order: "front",
-        hideInWaveformMode: true,
-      },
-      {
-        id: "musicplayer",
-        label: "Kontrol",
-        assetSrc: "/templates/biji-pler/musicplayer.png",
-        order: "front",
-      },
-      {
-        id: "musicplayerCenter",
-        label: "Tombol Pause/Play",
-        assetSrc: "/templates/biji-pler/musicplayer-center.png",
-        order: "front",
-        adjustable: true,
-        pressAnimation: {
-          anchorXPercent: 50.09,
-          anchorYPercent: 71.43,
-          durationSec: 1.0,
-        },
-      },
-      {
-        id: "layout",
-        label: "Volume bar (redup)",
-        assetSrc: "/templates/biji-pler/layout.png",
-        order: "front",
-        opacity: 10,
-        adjustable: true,
-      },
-      {
-        id: "volume",
-        label: "Volume bar",
-        assetSrc: "/templates/biji-pler/volume.png",
-        order: "front",
-        adjustable: true,
-      },
-      {
-        id: "starSpeaker",
-        label: "Star & Speaker",
-        assetSrc: "/templates/biji-pler/star-speaker.png",
-        order: "front",
-        opacity: 40,
-        adjustable: true,
-      },
-    ],
+    solidBackground: "#000000",
     slots: [
       {
         id: "sampul",
         type: "image",
         label: "Foto sampul",
-        x: 15.56,
-        y: 14.79,
-        width: 68.7,
-        height: 38.65,
         startSec: 0,
         endSec: 15,
-        radius: 36,
-        sampleSrc: "/templates/biji-pler/sample-cover.jpg",
       },
       {
         id: "audio1",
@@ -967,71 +889,6 @@ export const TEMPLATES: Template[] = [
         endSec: 15,
       },
     ],
-    textLayers: [
-      {
-        id: "title",
-        label: "Judul",
-        defaultText: "MABUK CINTA JDM PLAT KT REMIX",
-        x: 16.2,
-        y: 57.47,
-        fontSize: 35,
-        fontWeight: 800,
-        color: "#FFFFFF",
-        align: "left",
-        maxLength: 40,
-      },
-      {
-        id: "artist",
-        label: "Artist",
-        defaultText: "Ragil YETE",
-        x: 16.3,
-        y: 59.87,
-        fontSize: 29,
-        fontWeight: 500,
-        color: "rgba(255,255,255,0.65)",
-        align: "left",
-        maxLength: 30,
-      },
-      {
-        id: "airplayDevice",
-        label: "Nama Perangkat AirPlay",
-        defaultText: "NyxVoid's",
-        x: 46.5,
-        y: 82.86,
-        fontSize: 28,
-        fontWeight: 500,
-        color: "#FFFFFF",
-        align: "left",
-        maxLength: 20,
-      },
-    ],
-    durationLayer: {
-      currentX: 16.2,
-      currentY: 67.63,
-      totalX: 83.7,
-      totalY: 67.63,
-      fontSize: 30,
-      fontWeight: 500,
-      color: "rgba(255,255,255,0.7)",
-      countdown: true,
-    },
-    progressLayer: {
-      x1: 16.2,
-      x2: 83.7,
-      y: 64.84,
-      thickness: 18,
-      color: "#FFFFFF",
-    },
-    spectrumLayer: {
-      x: 81.7,
-      y: 57.6,
-      barCount: 6,
-      barWidth: 4,
-      gap: 4,
-      maxHeight: 38,
-      minHeight: 9,
-      color: "rgba(255,255,255,0.55)",
-    },
   },
   {
     id: "lyrics-glitch",
