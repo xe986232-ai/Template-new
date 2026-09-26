@@ -100,11 +100,12 @@ export default function Ios26MusicPlayerPage() {
   // Boks bingkai preview & editor -- ukurannya dihitung manual (lihat
   // useContainFitFrame di atas) biar SELALU beneran 9:16, gak lagi pakai
   // max-w/max-h tebak-tebakan yang beda sendiri antara mode preview & editor.
-  // fillFactor < 1 -- boks 9:16-nya disusutin biar ada spasi/margin di
-  // sekeliling (kayak kartu preview V4), gak nempel penuh ke atas-bawah
-  // area flex-nya walau rasionya udah bener.
-  const { areaRef: previewFrameAreaRef, size: previewFrameSize } = useContainFitFrame(IOS26_CANVAS_RATIO, 0.85);
-  const { areaRef: editorFrameAreaRef, size: editorFrameSize } = useContainFitFrame(IOS26_CANVAS_RATIO, 0.85);
+  // fillFactor = 1 -- boks ngisi penuh area flex-nya (contain-fit ke
+  // rasio), PERSIS kayak canvas preview V4 (QuickEditScreen), margin di
+  // sekeliling cukup dari padding container (px-4/px-6), bukan dari
+  // fillFactor < 1 lagi.
+  const { areaRef: previewFrameAreaRef, size: previewFrameSize } = useContainFitFrame(IOS26_CANVAS_RATIO, 1);
+  const { areaRef: editorFrameAreaRef, size: editorFrameSize } = useContainFitFrame(IOS26_CANVAS_RATIO, 1);
   // Handle imperatif ke widget -- dipakai baris <PlaybackBar> bersama di
   // bawah preview buat togglePlay()/seek() ASLI (lihat Widget.tsx), bukan
   // tiruan state terpisah.
@@ -204,7 +205,7 @@ export default function Ios26MusicPlayerPage() {
 
         <div ref={previewFrameAreaRef} className="relative z-0 flex min-h-0 flex-1 items-center justify-center overflow-hidden px-4 py-2">
           <div
-            className="relative flex items-center justify-center overflow-hidden rounded-3xl border border-black bg-black"
+            className="relative flex items-center justify-center overflow-hidden rounded-xl border border-black bg-black"
             style={
               previewFrameSize
                 ? { width: previewFrameSize.width, height: previewFrameSize.height }
@@ -308,7 +309,7 @@ export default function Ios26MusicPlayerPage() {
       >
         <div
           ref={widgetWrapRef}
-          className="relative flex items-center justify-center overflow-hidden rounded-[2.5rem] border border-white/10 bg-black"
+          className="relative flex items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-black"
           style={
             editorFrameSize
               ? { width: editorFrameSize.width, height: editorFrameSize.height }
