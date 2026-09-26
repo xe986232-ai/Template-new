@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { Check } from 'lucide-react';
 import { STAGE_MARKUP, PANELS_MARKUP } from './markup';
 import './widget.css';
 
@@ -23,11 +24,19 @@ export type Ios26EditorTab = 'media' | 'audio' | 'lanjutan';
 
 type Props = {
   /** Tab yang lagi kebuka di sheet edit (Media/Audio/Lanjutan), atau null
-   *  kalau sheet-nya lagi ketutup (mode preview doang). */
+   *  kalau sheet-nya lagi ketutup (mode preview doang / belum ada tab yang
+   *  diklik) -- niru alur template V4: sheet CUMA muncul kalau tombol tab
+   *  di-klik, bukan otomatis kebuka. */
   activeTab: Ios26EditorTab | null;
+  /** Label tab yang lagi aktif (mis. "Media"), ditaruh di header sheet
+   *  bareng tombol "Selesai" -- niru header sheet "Lanjutan" di
+   *  QuickEditScreen (V4). */
+  activeTabLabel?: string;
+  /** Tutup sheet (dipanggil dari tombol "Selesai" di header sheet). */
+  onClose?: () => void;
 };
 
-export default function Ios26MusicPlayerWidget({ activeTab }: Props) {
+export default function Ios26MusicPlayerWidget({ activeTab, activeTabLabel, onClose }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -537,10 +546,22 @@ export default function Ios26MusicPlayerWidget({ activeTab }: Props) {
   return (
     <div className="cc26-root" ref={rootRef}>
       <div id="stage" className="cc26-stage-col stage" dangerouslySetInnerHTML={{ __html: STAGE_MARKUP }} />
-      <div
-        className={`cc26-panel-sheet${activeTab ? ' open' : ''}`}
-        dangerouslySetInnerHTML={{ __html: PANELS_MARKUP }}
-      />
+      <div className={`cc26-panel-sheet${activeTab ? ' open' : ''}`}>
+        {activeTab && (
+          <div className="cc26-panel-head">
+            <span>{activeTabLabel}</span>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Selesai"
+              className="cc26-panel-close"
+            >
+              <Check size={15} strokeWidth={2.6} />
+            </button>
+          </div>
+        )}
+        <div className="cc26-panel-body" dangerouslySetInnerHTML={{ __html: PANELS_MARKUP }} />
+      </div>
     </div>
   );
 }

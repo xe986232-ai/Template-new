@@ -19,7 +19,9 @@ import { tokens } from '../../designTokens';
 export default function Ios26MusicPlayerPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<'preview' | 'editor'>('preview');
-  const [activeTab, setActiveTab] = useState<Ios26EditorTab>('media');
+  // null = sheet lagi ketutup (niru alur V4: panel CUMA muncul kalau
+  // tombol tab di-klik, bukan otomatis kebuka pas masuk mode editor).
+  const [activeTab, setActiveTab] = useState<Ios26EditorTab | null>(null);
   const [exportNotice, setExportNotice] = useState(false);
   const widgetWrapRef = useRef<HTMLDivElement>(null);
 
@@ -102,6 +104,13 @@ export default function Ios26MusicPlayerPage() {
     { id: 'audio', label: 'Audio', icon: Music2 },
     { id: 'lanjutan', label: 'Lanjutan', icon: SlidersHorizontal },
   ];
+  const activeTabLabel = TABS.find((t) => t.id === activeTab)?.label;
+
+  // Toggle ala tombol "Lanjutan" di V4: klik tab yang lagi aktif -> tutup
+  // sheet-nya; klik tab lain -> ganti isi sheet (tetep kebuka).
+  const handleTabClick = (id: Ios26EditorTab) => {
+    setActiveTab((cur) => (cur === id ? null : id));
+  };
 
   return (
     <div className="fixed inset-0 z-[45] flex flex-col overflow-hidden bg-black" style={{ fontFamily: tokens.fonts.body }}>
@@ -158,13 +167,19 @@ export default function Ios26MusicPlayerPage() {
           ref={widgetWrapRef}
           className="relative flex h-full max-h-[560px] w-full max-w-[300px] items-center justify-center overflow-hidden rounded-[2.5rem] border border-white/10 bg-black"
         >
-          <Ios26MusicPlayerWidget activeTab={activeTab} />
+          <Ios26MusicPlayerWidget
+            activeTab={activeTab}
+            activeTabLabel={activeTabLabel}
+            onClose={() => setActiveTab(null)}
+          />
         </div>
       </div>
 
-      {/* Tab bar bawah -- Media/Audio/Lanjutan, isi tab-nya dirender sebagai
-          sheet oleh Widget sendiri (lihat Ios26EditorTab & panel-group di
-          markup.ts/widget.css). */}
+      {/* Tab bar bawah -- Media/Audio/Lanjutan. Niru alur V4: klik tombolnya
+          buka sheet yang isinya dirender oleh Widget sendiri (lihat
+          Ios26EditorTab & panel-group di markup.ts/widget.css); klik tab
+          yang lagi aktif (atau tombol "Selesai" di header sheet) nutup
+          sheet-nya lagi. */}
       <div className="relative z-[60] flex shrink-0 items-center justify-around border-t border-white/10 bg-black px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2">
         {TABS.map(({ id, label, icon: Icon }) => {
           const active = activeTab === id;
@@ -172,7 +187,8 @@ export default function Ios26MusicPlayerPage() {
             <button
               key={id}
               type="button"
-              onClick={() => setActiveTab(id)}
+              onClick={() => handleTabClick(id)}
+              aria-pressed={active}
               data-ripple
               className="flex flex-1 flex-col items-center gap-1 rounded-lg py-1.5 text-[10.5px] font-semibold"
               style={{ color: active ? tokens.colors.accent : 'rgba(255,255,255,0.5)' }}
