@@ -901,25 +901,83 @@ export const TEMPLATES: Template[] = [
     lyricsTextLayers: [],
   },
   {
-    // Template ke-6: "iPhone Music Player V6" — DIKOSONGKAN TOTAL atas
-    // permintaan. Bukan cuma asset gambar yang dihapus (sudah dilakukan
-    // sebelumnya), tapi SEMUA isi canvas (teks judul/artist, durasi,
-    // progress bar, spectrum, slot foto) ikut dihapus juga. Yang tersisa
-    // cuma background solid polos + 1 slot audio (nggak digambar di
-    // canvas, cuma buat musik latar) biar timeline/export tetap bisa
-    // jalan. Kalau mau nambah elemen lagi, tinggal isi ulang textLayers/
-    // slots/durationLayer/dst seperti template lain.
+    // Template ke-6: "iPhone Music Player V6" — sekarang sudah diisi
+    // assets dari desain "Control Center" (kartu Now Playing ala iOS).
+    // Rangka/canvas TIDAK diubah (tetap 1080x1920, solidBackground hitam
+    // polos) — cuma nambahin decorLayers/slots/textLayers/durationLayer/
+    // progressLayer di atasnya, persis pola template lain (v4/v5).
+    //
+    // Semua asset diambil dari markup SVG kartu "player" (viewBox lokal
+    // 336x600) di desain aslinya, TANPA frame HP/wallpaper Control Center
+    // di belakangnya (sengaja dibuang sesuai permintaan) — cuma kartu
+    // Now Playing-nya doang. Karena rasio kartu asli (336:600) sedikit
+    // lebih pendek dari rasio canvas 9:16 (1080:1920), kartu di-scale
+    // UNIFORM (factor 3.2, pas timggi 600->1920) lalu di-center secara
+    // horizontal — jadi kartu (komponen) yang menyesuaikan canvas, BUKAN
+    // sebaliknya. Semua koordinat % di bawah sudah dikonversi dari
+    // koordinat lokal itu pakai rumus yang sama.
     id: "iphone-music-player-v6",
     name: "iPhone Music Player V6",
     duration: "0:15",
     gradientFrom: "#3A2E5C",
     gradientTo: "#0A090E",
+    previewImage: "/templates/iphone-music-player-v6/preview.jpg",
     canvasWidth: 1080,
     canvasHeight: 1920,
-    // SENGAJA tanpa baseAssetSrc/decorLayers — background solid polos.
+    // Tetap solidBackground polos (bukan baseAssetSrc) — sesuai rangka
+    // asli V6, tidak diubah.
     solidBackground: "#000000",
-    // Sengaja cuma audio — nggak ada slot foto/gambar visual sama sekali.
+    decorLayers: [
+      {
+        id: "card",
+        label: "Card Player",
+        assetSrc: "/templates/iphone-music-player-v6/card.png",
+        order: "back",
+        opacity: 100,
+        adjustable: true,
+      },
+      {
+        id: "progressbar",
+        label: "Progress bar",
+        assetSrc: "/templates/iphone-music-player-v6/progressbar.png",
+        order: "front",
+        hideInWaveformMode: true,
+      },
+      {
+        id: "musicplayer",
+        label: "Kontrol",
+        assetSrc: "/templates/iphone-music-player-v6/musicplayer.png",
+        order: "front",
+      },
+      {
+        id: "volume",
+        label: "Volume bar",
+        assetSrc: "/templates/iphone-music-player-v6/volume.png",
+        order: "front",
+        adjustable: true,
+      },
+      {
+        id: "airplay",
+        label: "Tombol AirPlay",
+        assetSrc: "/templates/iphone-music-player-v6/airplay.png",
+        order: "front",
+        adjustable: true,
+      },
+    ],
     slots: [
+      {
+        id: "sampul",
+        type: "image",
+        label: "Foto sampul",
+        x: 8.22,
+        y: 4.5,
+        width: 83.56,
+        height: 47,
+        startSec: 0,
+        endSec: 15,
+        radius: 19.2,
+        sampleSrc: "/templates/iphone-music-player-v6/sample-cover.jpg",
+      },
       {
         id: "audio1",
         type: "audio",
@@ -928,7 +986,48 @@ export const TEMPLATES: Template[] = [
         endSec: 15,
       },
     ],
-    // Sengaja KOSONG — tanpa judul/artist/teks apa pun di canvas.
-    textLayers: [],
+    textLayers: [
+      {
+        id: "title",
+        label: "Judul",
+        defaultText: "Apple",
+        x: 8.37,
+        y: 58.73,
+        fontSize: 51,
+        fontWeight: 600,
+        color: "#FFFFFF",
+        align: "left",
+        maxLength: 40,
+      },
+      {
+        id: "artist",
+        label: "Artist",
+        defaultText: "Charli XCX",
+        x: 8.37,
+        y: 61.91,
+        fontSize: 42,
+        fontWeight: 400,
+        color: "rgba(255,255,255,0.6)",
+        align: "left",
+        maxLength: 30,
+      },
+    ],
+    durationLayer: {
+      currentX: 8.37,
+      currentY: 69.18,
+      totalX: 91.63,
+      totalY: 69.18,
+      fontSize: 38,
+      fontWeight: 500,
+      color: "rgba(255,255,255,0.7)",
+      countdown: true,
+    },
+    progressLayer: {
+      x1: 8.22,
+      x2: 91.78,
+      y: 65.75,
+      thickness: 22,
+      color: "#FFFFFF",
+    },
   },
 ];
