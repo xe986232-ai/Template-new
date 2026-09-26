@@ -3,7 +3,6 @@ import {
   useLayoutEffect,
   useRef,
   useState,
-  type PointerEvent as ReactPointerEvent,
   type RefObject,
 } from "react";
 import {
@@ -17,8 +16,6 @@ import {
   Layers,
   Loader2,
   Music2,
-  Pause,
-  Play,
   RectangleHorizontal,
   RectangleVertical,
   Repeat,
@@ -28,7 +25,7 @@ import {
 } from "lucide-react";
 import type { Template, TemplateSlot } from "../types";
 import type { SlotMediaState, TextValueState } from "../lib/render";
-import { ActionButton } from "../../components/editor/TemplateEditorTabs";
+import { ActionButton, ClipThumb, PlaybackBar } from "../../components/editor/TemplateEditorTabs";
 
 // Layar edit RINGKAS ala mode template CapCut: muncul begitu user pencet
 // "Gunakan template", tanpa timeline. Preview + tombol putar, deretan klip
@@ -154,45 +151,7 @@ function PreviewMirror({ sourceRef }: { sourceRef: RefObject<HTMLCanvasElement |
   );
 }
 
-function SeekBar({
-  progress,
-  onSeek,
-}: {
-  progress: number;
-  onSeek: (ratio: number) => void;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  const seekFrom = (e: ReactPointerEvent) => {
-    const r = ref.current?.getBoundingClientRect();
-    if (!r || r.width === 0) return;
-    onSeek(Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)));
-  };
-  return (
-    <div
-      ref={ref}
-      role="slider"
-      aria-label="Posisi putar"
-      aria-valuemin={0}
-      aria-valuemax={100}
-      aria-valuenow={Math.round(progress * 100)}
-      className="relative h-4 w-full cursor-pointer touch-none"
-      onPointerDown={(e) => {
-        e.currentTarget.setPointerCapture(e.pointerId);
-        seekFrom(e);
-      }}
-      onPointerMove={(e) => {
-        if (e.buttons) seekFrom(e);
-      }}
-    >
-      <div className="absolute inset-x-0 top-1/2 h-[2px] -translate-y-1/2 bg-white/20" />
-      <div
-        className="absolute left-0 top-1/2 h-[2px] -translate-y-1/2 bg-editor-accent"
-        style={{ width: `${progress * 100}%` }}
-      />
-    </div>
-  );
-}
-
+// SeekBar/PlaybackBar (garis progress + waktu + tombol play/pause) dan
 // ActionButton (tombol "Ganti/Pangkas/Latar/Teks" di baris aksi kontekstual)
 // sekarang komponen bersama -- lihat import di atas -- biar template lain
 // (mis. IOS 26 Control Center) yang butuh baris aksi serupa pakai komponen
@@ -209,7 +168,6 @@ export default function QuickEditScreen(p: Props) {
   const selectedSlot = p.template.slots.find((s) => s.id === selectedId) ?? null;
   const textLayers = p.template.textLayers ?? [];
   const canExport = !!(p.template.baseAssetSrc || p.template.solidBackground);
-  const progress = p.duration > 0 ? Math.min(1, p.currentSec / p.duration) : 0;
 
   function goTab(next: Tab) {
     setTab(next);
@@ -310,26 +268,14 @@ export default function QuickEditScreen(p: Props) {
         <PreviewMirror sourceRef={p.sourceCanvasRef} />
       </div>
 
-      <div className="shrink-0">
-        <SeekBar progress={progress} onSeek={(r) => p.onSeek(r * p.duration)} />
-        <div className="relative flex items-center px-4 pb-0.5 pt-0 text-[12px] tabular-nums">
-          <span>{fmtClock(p.currentSec)}</span>
-          <span className="mx-1.5 h-3 w-px bg-white/30" />
-          <span className="text-white/45">{fmtClock(p.duration)}</span>
-          <button
-            type="button"
-            onClick={p.onTogglePlay}
-            aria-label={p.isPlaying ? "Jeda" : "Putar"}
-            className="absolute left-1/2 top-1/2 flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center transition active:scale-90"
-          >
-            {p.isPlaying ? (
-              <Pause size={20} fill="currentColor" />
-            ) : (
-              <Play size={20} fill="currentColor" />
-            )}
-          </button>
-        </div>
-      </div>
+      <PlaybackBar
+        currentSec={p.currentSec}
+        duration={p.duration}
+        isPlaying={p.isPlaying}
+        onSeek={p.onSeek}
+        onTogglePlay={p.onTogglePlay}
+        accentColor="#ffacff"
+      />
 
       <div className="flex h-[76px] shrink-0 items-center overflow-x-auto px-4 [scrollbar-width:none]">
         {tab === "media" ? (
@@ -338,17 +284,16 @@ export default function QuickEditScreen(p: Props) {
               const media = p.slotMedia[slot.id];
               const selected = selectedId === slot.id;
               return (
-                <button
+                <ClipThumb
                   key={slot.id}
-                  type="button"
+                  index={i + 1}
+                  durationLabel={`${p.duration.toFixed(1)}s`}
+                  selected={selected}
+                  label={slot.label}
                   onClick={() => {
                     setSelectedId(slot.id);
                     setSheet(null);
                   }}
-                  aria-label={`${slot.label}${selected ? " (dipilih)" : ""}`}
-                  className={`relative h-[56px] w-[46px] shrink-0 overflow-hidden rounded-lg border-2 bg-white/10 transition active:scale-95 ${
-                    selected ? "border-white" : "border-transparent"
-                  }`}
                 >
                   {media ? (
                     slot.type === "video" ? (
@@ -365,13 +310,7 @@ export default function QuickEditScreen(p: Props) {
                   ) : (
                     <ImageIcon size={16} className="mx-auto text-white/40" />
                   )}
-                  <span className="absolute left-0.5 top-0.5 rounded bg-black/60 px-1 text-[9px] font-semibold">
-                    {i + 1}
-                  </span>
-                  <span className="absolute bottom-0.5 left-1 text-[9px] font-medium drop-shadow">
-                    {p.duration.toFixed(1)}s
-                  </span>
-                </button>
+                </ClipThumb>
               );
             })}
           </div>

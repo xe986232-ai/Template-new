@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import { STAGE_MARKUP, PANELS_MARKUP } from './markup';
 import { EditorSheet } from '../components/editor/TemplateEditorTabs';
 import './widget.css';
@@ -18,7 +18,24 @@ import './widget.css';
 // Catatan: ini preview interaktif doang (klik = buka/tutup kartu). Perilaku
 // "auto transisi CC -> Music Player di detik tertentu lewat timeline video"
 // itu punya sistem export/timeline sendiri yang belum dikerjain di sini.
-export type Ios26MusicPlayerWidgetHandle = void;
+// Handle imperatif buat halaman pembungkus (mis. Ios26MusicPlayerPage)
+// nyambungin baris <PlaybackBar> bersama (lihat TemplateEditorTabs.tsx) ke
+// play/pause & seek ASLI widget ini -- bukan tiruan state terpisah.
+export type Ios26MusicPlayerWidgetHandle = {
+  togglePlay: () => void;
+  /** rasio 0..1 */
+  seek: (ratio: number) => void;
+};
+
+/** Snapshot playback buat dipakai <PlaybackBar> bersama di halaman
+ *  pembungkus -- di-report tiap kali berubah (tick, timeupdate, play/pause,
+ *  upload/hapus musik asli), ngikut audio.currentTime/duration beneran
+ *  kalau ada musik asli, atau timer demo kalau belum. */
+export type Ios26PlaybackState = {
+  isPlaying: boolean;
+  currentSec: number;
+  duration: number;
+};
 
 export type Ios26EditorTab = 'media' | 'audio' | 'lanjutan';
 
@@ -39,9 +56,20 @@ type Props = {
    *  QuickEditScreen (V4). Opsional: kalau gak disuplai, cover-nya cuma
    *  bisa diganti lewat sheet "Media" seperti biasa. */
   onSelectCover?: () => void;
+  /** Snapshot playback (isPlaying/currentSec/duration) di-report tiap kali
+   *  berubah -- dipakai halaman pembungkus buat nyuplai <PlaybackBar>
+   *  bersama dengan state ASLI, bukan angka statis. */
+  onPlaybackState?: (state: Ios26PlaybackState) => void;
+  /** Data URL cover/album art saat ini (atau null kalau belum/dihapus) --
+   *  dipakai halaman pembungkus buat nampilin thumbnail klip di strip
+   *  media bawah (<ClipThumb>), niru strip klip di QuickEditScreen (V4). */
+  onCoverChange?: (dataUrl: string | null) => void;
 };
 
-export default function Ios26MusicPlayerWidget({ activeTab, activeTabLabel, onClose, onSelectCover }: Props) {
+const Ios26MusicPlayerWidget = forwardRef<Ios26MusicPlayerWidgetHandle, Props>(function Ios26MusicPlayerWidget(
+  { activeTab, activeTabLabel, onClose, onSelectCover, onPlaybackState, onCoverChange },
+  ref
+) {
   const rootRef = useRef<HTMLDivElement>(null);
   // Ref, bukan langsung prop -- handler klik cover dipasang di effect
   // mount-only ([] deps) di bawah, jadi harus baca versi terbaru callback
@@ -50,6 +78,25 @@ export default function Ios26MusicPlayerWidget({ activeTab, activeTabLabel, onCl
   useEffect(() => {
     onSelectCoverRef.current = onSelectCover;
   }, [onSelectCover]);
+  const onPlaybackStateRef = useRef(onPlaybackState);
+  useEffect(() => {
+    onPlaybackStateRef.current = onPlaybackState;
+  }, [onPlaybackState]);
+  const onCoverChangeRef = useRef(onCoverChange);
+  useEffect(() => {
+    onCoverChangeRef.current = onCoverChange;
+  }, [onCoverChange]);
+  // Diisi di effect mount-only di bawah begitu doTogglePlay/doSeek asli
+  // ke-define -- useImperativeHandle baca lewat ref ini biar tetep bisa
+  // manggil versi terbaru walau effect-nya cuma jalan sekali ([] deps).
+  const apiRef = useRef<Ios26MusicPlayerWidgetHandle>({
+    togglePlay: () => {},
+    seek: () => {},
+  });
+  useImperativeHandle(ref, () => ({
+    togglePlay: () => apiRef.current.togglePlay(),
+    seek: (ratio: number) => apiRef.current.seek(ratio),
+  }), []);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -341,6 +388,7 @@ export default function Ios26MusicPlayerWidget({ activeTab, activeTabLabel, onCl
       albumArtPlaceholder.setAttribute('opacity', '0.25');
       removeArtBtn.style.display = 'none';
       ctrlAlbumArt.value = '';
+      onCoverChangeRef.current?.(null);
     });
     on(ctrlAlbumArt, 'click', (e: Event) => e.stopPropagation());
     on(ctrlAlbumArt, 'change', () => {
@@ -354,6 +402,7 @@ export default function Ios26MusicPlayerWidget({ activeTab, activeTabLabel, onCl
         albumArtImage.setAttribute('opacity', '1');
         albumArtPlaceholder.setAttribute('opacity', '0');
         removeArtBtn.style.display = 'block';
+        onCoverChangeRef.current?.(dataUrl);
       };
       reader.readAsDataURL(file);
     });
@@ -418,10 +467,17 @@ export default function Ios26MusicPlayerWidget({ activeTab, activeTabLabel, onCl
       sec = Math.max(0, Math.round(sec));
       return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
     }
+    // Report state playback ASLI (bukan angka statis) ke halaman pembungkus
+    // tiap kali elapsed/durasi/isPlaying berubah -- dipakai <PlaybackBar>
+    // bersama di luar widget ini (lihat prop onPlaybackState).
+    function reportPlaybackState() {
+      onPlaybackStateRef.current?.({ isPlaying, currentSec: elapsed, duration: songTotal });
+    }
     function renderDuration() {
       timeElapsed.textContent = fmtTime(elapsed);
       timeRemaining.textContent = '-' + fmtTime(songTotal - elapsed);
       progressFill.setAttribute('width', ((282 * elapsed) / songTotal).toFixed(2));
+      reportPlaybackState();
     }
     function startTick() {
       // Demo doang (belum ada musik asli) -- kalau audio asli udah
@@ -448,12 +504,16 @@ export default function Ios26MusicPlayerWidget({ activeTab, activeTabLabel, onCl
     function setPlayingIcon(playing: boolean) {
       playIcon.style.opacity = playing ? '0' : '1';
       pauseIcon.style.opacity = playing ? '1' : '0';
+      reportPlaybackState();
     }
     on(playPauseIconGroup, 'animationend', () => {
       playPauseIconGroup.classList.remove('bounce');
     });
-    on(playPauseHit, 'click', (e: Event) => {
-      e.stopPropagation();
+    // Logic toggle play/pause asli -- dipisah jadi fungsi (bukan cuma inline
+    // di handler klik) biar bisa dipanggil juga dari togglePlay() yang
+    // di-expose lewat ref (dipakai tombol play/pause di <PlaybackBar>
+    // halaman pembungkus, bukan cuma klik langsung di widget).
+    function doTogglePlay() {
       setBounce();
       if (audioEl) {
         // Ada musik asli -- play/pause elemen <audio> beneran, progress &
@@ -467,6 +527,23 @@ export default function Ios26MusicPlayerWidget({ activeTab, activeTabLabel, onCl
       setPlayingIcon(isPlaying);
       if (isPlaying) startTick();
       else stopTick();
+    }
+    // Seek asli -- dipanggil dari drag <PlaybackBar> di halaman pembungkus.
+    // Kalau ada musik asli, geser audioEl.currentTime beneran (progress
+    // ngikut lewat event 'timeupdate'); kalau belum, geser timer demo.
+    function doSeek(ratio: number) {
+      const r = Math.min(1, Math.max(0, ratio));
+      if (audioEl && audioEl.duration) {
+        audioEl.currentTime = r * audioEl.duration;
+        return;
+      }
+      elapsed = r * songTotal;
+      renderDuration();
+    }
+    apiRef.current = { togglePlay: doTogglePlay, seek: doSeek };
+    on(playPauseHit, 'click', (e: Event) => {
+      e.stopPropagation();
+      doTogglePlay();
     });
 
     // ==== Upload musik asli (tab Audio) ====
@@ -591,4 +668,6 @@ export default function Ios26MusicPlayerWidget({ activeTab, activeTabLabel, onCl
       </EditorSheet>
     </div>
   );
-}
+});
+
+export default Ios26MusicPlayerWidget;

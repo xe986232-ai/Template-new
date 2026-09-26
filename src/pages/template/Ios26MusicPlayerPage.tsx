@@ -1,11 +1,17 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, Sparkles, Music2, Image as ImageIcon, SlidersHorizontal, Download, Repeat, Type } from 'lucide-react';
-import Ios26MusicPlayerWidget, { type Ios26EditorTab } from '../../ios26-music-player/Widget';
+import Ios26MusicPlayerWidget, {
+  type Ios26EditorTab,
+  type Ios26MusicPlayerWidgetHandle,
+  type Ios26PlaybackState,
+} from '../../ios26-music-player/Widget';
 import {
   EditorTabBar,
   EditorSlotActionBar,
   ActionButton,
+  ClipThumb,
+  PlaybackBar,
   toggleEditorTab,
   type EditorTabDef,
 } from '../../components/editor/TemplateEditorTabs';
@@ -31,6 +37,20 @@ export default function Ios26MusicPlayerPage() {
   const [activeTab, setActiveTab] = useState<Ios26EditorTab | null>(null);
   const [exportNotice, setExportNotice] = useState(false);
   const widgetWrapRef = useRef<HTMLDivElement>(null);
+  // Handle imperatif ke widget -- dipakai baris <PlaybackBar> bersama di
+  // bawah preview buat togglePlay()/seek() ASLI (lihat Widget.tsx), bukan
+  // tiruan state terpisah.
+  const widgetApiRef = useRef<Ios26MusicPlayerWidgetHandle>(null);
+  // Snapshot playback & cover ASLI widget -- di-report lewat prop
+  // onPlaybackState/onCoverChange (lihat Widget.tsx), dipakai nyuplai
+  // <PlaybackBar> dan <ClipThumb> bersama sama persis kayak QuickEditScreen
+  // (V4), bukan angka statis.
+  const [playback, setPlayback] = useState<Ios26PlaybackState>({
+    isPlaying: false,
+    currentSec: 113,
+    duration: 225,
+  });
+  const [coverUrl, setCoverUrl] = useState<string | null>(null);
   // "Slot" yang lagi kepilih -- niru selectedSlot di QuickEditScreen (V4).
   // Satu-satunya slot media yang ada di widget ini baru cover/album art,
   // makanya union-nya cuma 'cover' | null (bukan id dinamis kayak V4 yang
@@ -215,6 +235,7 @@ export default function Ios26MusicPlayerPage() {
           className="relative flex h-full max-h-[560px] w-full max-w-[300px] items-center justify-center overflow-hidden rounded-[2.5rem] border border-white/10 bg-black"
         >
           <Ios26MusicPlayerWidget
+            ref={widgetApiRef}
             activeTab={activeTab}
             activeTabLabel={activeTabLabel}
             onClose={() => setActiveTab(null)}
@@ -222,8 +243,48 @@ export default function Ios26MusicPlayerPage() {
               setSelectedSlot('cover');
               setActiveTab(null);
             }}
+            onPlaybackState={setPlayback}
+            onCoverChange={setCoverUrl}
           />
         </div>
+      </div>
+
+      {/* Baris seek bar + waktu + tombol play/pause, PERSIS di bawah
+          preview -- komponen bersama yang sama dipakai QuickEditScreen (V4),
+          disambungin ke play/pause & progress ASLI widget lewat
+          widgetApiRef (togglePlay/seek) + state playback yang di-report
+          lewat onPlaybackState di atas. */}
+      <PlaybackBar
+        currentSec={playback.currentSec}
+        duration={playback.duration}
+        isPlaying={playback.isPlaying}
+        onSeek={(sec) => widgetApiRef.current?.seek(playback.duration > 0 ? sec / playback.duration : 0)}
+        onTogglePlay={() => widgetApiRef.current?.togglePlay()}
+        accentColor={tokens.colors.accent}
+      />
+
+      {/* Strip klip media, PERSIS di bawah baris play/pause -- satu-satunya
+          "klip" di template ini baru cover/album art, jadi cukup satu
+          <ClipThumb> (komponen bersama yang sama dipakai strip klip V4)
+          nampilin cover asli (fallback ikon kalau belum ada) + durasi lagu
+          ASLI dari state playback di atas. */}
+      <div className="relative z-10 flex h-[76px] shrink-0 items-center bg-black px-4">
+        <ClipThumb
+          index={1}
+          durationLabel={`${playback.duration.toFixed(1)}s`}
+          selected={selectedSlot === 'cover'}
+          label="Cover"
+          onClick={() => {
+            setSelectedSlot('cover');
+            setActiveTab(null);
+          }}
+        >
+          {coverUrl ? (
+            <img src={coverUrl} alt="" className="h-full w-full object-cover" />
+          ) : (
+            <ImageIcon size={16} className="mx-auto mt-4 text-white/40" />
+          )}
+        </ClipThumb>
       </div>
 
       {/* Baris bawah: tab bar biasa (Media/Audio/Lanjutan), ATAU begitu

@@ -1,5 +1,5 @@
-import { Check, ChevronLeft, type LucideIcon } from "lucide-react";
-import type { ReactNode } from "react";
+import { Check, ChevronLeft, Pause, Play, type LucideIcon } from "lucide-react";
+import { useRef, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 
 // Dua potongan UI yang berulang di SETIAP halaman editor template
 // (V4/canvas, IOS 26 Control Center, dan template2 berikutnya):
@@ -196,5 +196,141 @@ export function EditorSlotActionBar({ onBack, children, className = "" }: Editor
         {children}
       </div>
     </div>
+  );
+}
+
+function fmtClock(sec: number) {
+  const s = Math.max(0, Math.floor(sec));
+  return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+}
+
+type SeekBarProps = {
+  /** 0..1 */
+  progress: number;
+  /** Dipanggil dengan rasio 0..1. */
+  onSeek: (ratio: number) => void;
+  accentColor?: string;
+};
+
+/** Garis tipis draggable buat posisi putar -- awalnya lokal di
+ *  QuickEditScreen (V4), sekarang dipindah ke sini biar template lain
+ *  (mis. IOS 26 Music Player) yang punya audio/video asli beneran bisa
+ *  pakai komponen yang sama persis, bukan tiruan visual doang. */
+export function SeekBar({ progress, onSeek, accentColor = "#ffacff" }: SeekBarProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const seekFrom = (e: ReactPointerEvent) => {
+    const r = ref.current?.getBoundingClientRect();
+    if (!r || r.width === 0) return;
+    onSeek(Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)));
+  };
+  return (
+    <div
+      ref={ref}
+      role="slider"
+      aria-label="Posisi putar"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={Math.round(progress * 100)}
+      className="relative h-4 w-full cursor-pointer touch-none"
+      onPointerDown={(e) => {
+        e.currentTarget.setPointerCapture(e.pointerId);
+        seekFrom(e);
+      }}
+      onPointerMove={(e) => {
+        if (e.buttons) seekFrom(e);
+      }}
+    >
+      <div className="absolute inset-x-0 top-1/2 h-[2px] -translate-y-1/2 bg-white/20" />
+      <div
+        className="absolute left-0 top-1/2 h-[2px] -translate-y-1/2"
+        style={{ width: `${progress * 100}%`, backgroundColor: accentColor }}
+      />
+    </div>
+  );
+}
+
+type PlaybackBarProps = {
+  currentSec: number;
+  duration: number;
+  isPlaying: boolean;
+  onSeek: (sec: number) => void;
+  onTogglePlay: () => void;
+  accentColor?: string;
+  className?: string;
+};
+
+/** Baris "seek bar + waktu + tombol play/pause" persis di bawah preview --
+ *  sama persis yang ada di QuickEditScreen (V4), sekarang jadi komponen
+ *  bersama biar template lain (IOS 26 Music Player, dst) yang punya
+ *  audio/video beneran tinggal nyambungin state play/seek-nya sendiri,
+ *  bukan gambar ulang UI-nya dari nol. */
+export function PlaybackBar({
+  currentSec,
+  duration,
+  isPlaying,
+  onSeek,
+  onTogglePlay,
+  accentColor = "#ffacff",
+  className = "",
+}: PlaybackBarProps) {
+  const progress = duration > 0 ? Math.min(1, currentSec / duration) : 0;
+  return (
+    <div className={`shrink-0 ${className}`}>
+      <SeekBar progress={progress} onSeek={(r) => onSeek(r * duration)} accentColor={accentColor} />
+      <div className="relative flex items-center px-4 pb-0.5 pt-0 text-[12px] tabular-nums text-white">
+        <span>{fmtClock(currentSec)}</span>
+        <span className="mx-1.5 h-3 w-px bg-white/30" />
+        <span className="text-white/45">{fmtClock(duration)}</span>
+        <button
+          type="button"
+          onClick={onTogglePlay}
+          aria-label={isPlaying ? "Jeda" : "Putar"}
+          data-ripple
+          className="absolute left-1/2 top-1/2 flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center transition active:scale-90"
+        >
+          {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+type ClipThumbProps = {
+  /** Nomor urut klip (badge kecil kiri atas), mis. 1. */
+  index: number;
+  /** Label durasi (badge kiri bawah), mis. "15.0s". */
+  durationLabel: string;
+  selected?: boolean;
+  onClick: () => void;
+  label?: string;
+  /** Isi visual thumbnail (img/video/ikon placeholder) -- dibiarkan bebas
+   *  lewat children biar V4 (video/img per slot) dan template lain (mis.
+   *  satu cover art doang) sama-sama bisa pakai. */
+  children: ReactNode;
+};
+
+/** Tombol thumbnail klip di strip media bawah (badge nomor + durasi) --
+ *  dipindah dari markup lokal QuickEditScreen (V4) ke sini biar template
+ *  lain yang punya strip klip serupa (mis. IOS 26 Music Player) pakai
+ *  komponen yang sama persis. */
+export function ClipThumb({ index, durationLabel, selected, onClick, label, children }: ClipThumbProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={`${label ?? `Klip ${index}`}${selected ? " (dipilih)" : ""}`}
+      data-ripple
+      className={`relative h-[56px] w-[46px] shrink-0 overflow-hidden rounded-lg border-2 bg-white/10 transition active:scale-95 ${
+        selected ? "border-white" : "border-transparent"
+      }`}
+    >
+      {children}
+      <span className="absolute left-0.5 top-0.5 rounded bg-black/60 px-1 text-[9px] font-semibold text-white">
+        {index}
+      </span>
+      <span className="absolute bottom-0.5 left-1 text-[9px] font-medium text-white drop-shadow">
+        {durationLabel}
+      </span>
+    </button>
   );
 }
