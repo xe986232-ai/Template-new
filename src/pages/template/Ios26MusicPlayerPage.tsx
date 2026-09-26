@@ -104,8 +104,8 @@ export default function Ios26MusicPlayerPage() {
   // rasio), PERSIS kayak canvas preview V4 (QuickEditScreen), margin di
   // sekeliling cukup dari padding container (px-4/px-6), bukan dari
   // fillFactor < 1 lagi.
-  const { areaRef: previewFrameAreaRef, size: previewFrameSize } = useContainFitFrame(IOS26_CANVAS_RATIO, 1);
-  const { areaRef: editorFrameAreaRef, size: editorFrameSize } = useContainFitFrame(IOS26_CANVAS_RATIO, 1);
+  const { areaRef: previewFrameAreaRef, size: previewFrameSize } = useContainFitFrame(IOS26_CANVAS_RATIO, 0.7);
+  const { areaRef: editorFrameAreaRef, size: editorFrameSize } = useContainFitFrame(IOS26_CANVAS_RATIO, 0.7);
   // Handle imperatif ke widget -- dipakai baris <PlaybackBar> bersama di
   // bawah preview buat togglePlay()/seek() ASLI (lihat Widget.tsx), bukan
   // tiruan state terpisah.
