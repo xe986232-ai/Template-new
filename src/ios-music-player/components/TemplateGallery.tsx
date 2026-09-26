@@ -6,6 +6,7 @@ import {
   type ChangeEvent,
   type MouseEvent,
 } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Image as ImageIcon,
   Search,
@@ -295,6 +296,58 @@ function DraftCard({
         )}
       </button>
     </div>
+  );
+}
+
+// Kartu khusus buat template "IOS 26 Music Player" -- SENGAJA bukan
+// `Template` biasa (gak lewat TEMPLATES/render.ts), jadi gak butuh mesin
+// canvas thumbnail dan klik-nya nge-navigate ke halaman preview mandiri
+// (/template/ios26-music-player), BUKAN buka <Editor> kayak kartu lain.
+// Lihat src/pages/template/Ios26MusicPlayerPage.tsx buat detail halamannya.
+function NewIos26TemplateCard({ index }: { index: number }) {
+  const navigate = useNavigate();
+  return (
+    <button
+      onClick={() => navigate("/template/ios26-music-player")}
+      data-ripple
+      className="fx-card-in group relative flex w-full flex-col overflow-hidden rounded-3xl border border-black text-left transition-transform duration-300 hover:-translate-y-1 active:scale-[0.97]"
+      style={fxDelay(Math.min(index, 8) * 60 + 80, {
+        backgroundColor: tokens.colors.accent,
+      })}
+    >
+      <div className="relative flex h-full flex-col overflow-hidden">
+        <div className="relative flex aspect-[9/16] w-full flex-col items-center justify-center gap-2 overflow-hidden bg-black">
+          <span
+            className="absolute left-2.5 top-2.5 flex items-center gap-1 rounded-full px-2 py-0.5 text-[8.5px] font-semibold uppercase tracking-wide text-black"
+            style={{ backgroundColor: tokens.colors.accent }}
+          >
+            <Sparkles size={9} strokeWidth={2.5} />
+            Baru
+          </span>
+          <span className="absolute right-2.5 top-2.5 rounded-full bg-white/15 px-2 py-0.5 text-[9px] font-semibold tabular-nums tracking-wide text-white">
+            Preview
+          </span>
+          <AudioWaveform size={34} strokeWidth={1.5} className="text-white/70" />
+        </div>
+
+        <div className="flex flex-col gap-1.5 border-t border-black px-3 py-2.5">
+          <p
+            className="truncate text-[13px] font-semibold leading-tight tracking-tight text-black"
+            style={{ fontFamily: tokens.fonts.heading }}
+          >
+            IOS 26 Music Player
+          </p>
+          <div className="flex items-center justify-between gap-2">
+            <p className="truncate text-[9.5px] text-black/75">
+              Klik kartu audio buat buka Music Player
+            </p>
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-black text-white transition-transform duration-300 group-active:translate-x-0.5">
+              <ArrowRight size={12} strokeWidth={2.5} />
+            </span>
+          </div>
+        </div>
+      </div>
+    </button>
   );
 }
 
@@ -700,11 +753,12 @@ export default function TemplateGallery({
            masih AKTIF (bukan config/templates/{id}/enabled === false)
            yang dirender di sini. */
         <div className="fx-slide-from-right relative grid flex-1 auto-rows-min grid-cols-2 gap-3 overflow-y-auto p-4 pb-2">
+          <NewIos26TemplateCard index={0} />
           {visibleTemplates.map((template, i) => (
             <TemplateCard
               key={template.id}
               template={template}
-              index={i}
+              index={i + 1}
               onSelect={(t, origin) => setPreview({ template: t, origin })}
             />
           ))}
