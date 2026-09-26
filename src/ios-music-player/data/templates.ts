@@ -901,12 +901,14 @@ export const TEMPLATES: Template[] = [
     lyricsTextLayers: [],
   },
   {
-    // Template ke-6: "iPhone Music Player V6" — SUDAH DIKOSONGKAN dari
-    // seluruh asset visual (bg/card/airplay/control/volume/dll) atas
-    // permintaan, diganti solid background polos. Struktur slot/teks/
-    // duration/progress/spectrum tetap dipertahankan (itu semua digambar
-    // dari kode, bukan file gambar) biar timeline & editor tetap jalan
-    // normal, cuma tampilannya sekarang minimal (background polos).
+    // Template ke-6: "iPhone Music Player V6" — DIKOSONGKAN TOTAL atas
+    // permintaan. Bukan cuma asset gambar yang dihapus (sudah dilakukan
+    // sebelumnya), tapi SEMUA isi canvas (teks judul/artist, durasi,
+    // progress bar, spectrum, slot foto) ikut dihapus juga. Yang tersisa
+    // cuma background solid polos + 1 slot audio (nggak digambar di
+    // canvas, cuma buat musik latar) biar timeline/export tetap bisa
+    // jalan. Kalau mau nambah elemen lagi, tinggal isi ulang textLayers/
+    // slots/durationLayer/dst seperti template lain.
     id: "iphone-music-player-v6",
     name: "iPhone Music Player V6",
     duration: "0:15",
@@ -914,22 +916,10 @@ export const TEMPLATES: Template[] = [
     gradientTo: "#0A090E",
     canvasWidth: 1080,
     canvasHeight: 1920,
-    // SENGAJA tanpa baseAssetSrc/decorLayers — semua asset gambar template
-    // ini sudah dihapus. Background sekarang solid warna polos.
+    // SENGAJA tanpa baseAssetSrc/decorLayers — background solid polos.
     solidBackground: "#000000",
+    // Sengaja cuma audio — nggak ada slot foto/gambar visual sama sekali.
     slots: [
-      {
-        id: "sampul",
-        type: "image",
-        label: "Foto sampul",
-        x: 15.56,
-        y: 14.79,
-        width: 68.7,
-        height: 38.65,
-        startSec: 0,
-        endSec: 15,
-        radius: 36,
-      },
       {
         id: "audio1",
         type: "audio",
@@ -938,58 +928,7 @@ export const TEMPLATES: Template[] = [
         endSec: 15,
       },
     ],
-    textLayers: [
-      {
-        id: "title",
-        label: "Judul",
-        defaultText: "MABUK CINTA JDM PLAT KT REMIX",
-        x: 16.2,
-        y: 57.47,
-        fontSize: 35,
-        fontWeight: 800,
-        color: "#FFFFFF",
-        align: "left",
-        maxLength: 40,
-      },
-      {
-        id: "artist",
-        label: "Artist",
-        defaultText: "Ragil YETE",
-        x: 16.3,
-        y: 59.87,
-        fontSize: 29,
-        fontWeight: 500,
-        color: "rgba(255,255,255,0.65)",
-        align: "left",
-        maxLength: 30,
-      },
-    ],
-    durationLayer: {
-      currentX: 16.2,
-      currentY: 67.63,
-      totalX: 83.7,
-      totalY: 67.63,
-      fontSize: 30,
-      fontWeight: 500,
-      color: "rgba(255,255,255,0.7)",
-      countdown: true,
-    },
-    progressLayer: {
-      x1: 16.2,
-      x2: 83.7,
-      y: 64.84,
-      thickness: 18,
-      color: "#FFFFFF",
-    },
-    spectrumLayer: {
-      x: 81.7,
-      y: 57.6,
-      barCount: 6,
-      barWidth: 4,
-      gap: 4,
-      maxHeight: 38,
-      minHeight: 9,
-      color: "rgba(255,255,255,0.55)",
-    },
+    // Sengaja KOSONG — tanpa judul/artist/teks apa pun di canvas.
+    textLayers: [],
   },
 ];
