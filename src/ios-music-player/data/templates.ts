@@ -857,14 +857,10 @@ export const TEMPLATES: Template[] = [
     },
   },
   {
-    // Template ke-6: "BIJI PLER" — templatenya TETAP ADA (id/name/slot
-    // media+audio dasar), tapi semua ISI/ASET dikosongkan total: gak ada
-    // decorLayers (card/kontrol/progress/dst), gak ada baseAssetSrc (ganti
-    // solidBackground hitam polos, sama pola kayak template "Lyrics" di
-    // bawah), gak ada textLayers/durationLayer/progressLayer/spectrumLayer.
-    // Folder /templates/biji-pler/ juga udah dikosongin (aset PNG/JPG hasil
-    // duplikat V4 dihapus semua). Tinggal isi ulang manual kalau mau
-    // dikustom dari nol.
+    // Template ke-6: "BIJI PLER" — masih tanpa decorLayers/textLayers/
+    // durationLayer/progressLayer/spectrumLayer (belum dikustom apa-apa).
+    // Satu-satunya isi: baseAssetSrc, satu gambar full-canvas (1080x1920,
+    // lihat public/templates/biji-pler/bg.jpg) jadi background dasarnya.
     id: "biji-pler",
     name: "BIJI PLER",
     duration: "0:15",
@@ -872,7 +868,7 @@ export const TEMPLATES: Template[] = [
     gradientTo: "#0A090E",
     canvasWidth: 1080,
     canvasHeight: 1920,
-    solidBackground: "#000000",
+    baseAssetSrc: "/templates/biji-pler/bg.jpg",
     slots: [
       {
         id: "sampul",
