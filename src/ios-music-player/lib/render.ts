@@ -28,13 +28,14 @@ export const MAX_BACKGROUND_BLUR = 100;
  *  pudar/transparan di pinggir canvas (area blur "meluber" keluar). */
 export const BACKGROUND_BLUR_OVERSCAN_FACTOR = 2;
 
-/** Blur background default per template (px). Template v4, v5, & v6 (klon v4)
- *  langsung full blur (100px) begitu dibuka/direset, template lain tetap
- *  0 (tajam). */
+/** Blur background default per template (px). Template v4 & v5 langsung
+ *  full blur (100px) begitu dibuka/direset, template lain tetap 0 (tajam).
+ *  V6 SENGAJA tidak ikut lagi — sekarang backgroundnya solid warna polos
+ *  (solidBackground), bukan foto, jadi blur nggak relevan/nggak kelihatan
+ *  efeknya. */
 export function defaultBackgroundBlurFor(templateId: string): number {
   return templateId === "iphone-music-player-v4" ||
-    templateId === "iphone-music-player-v5" ||
-    templateId === "iphone-music-player-v6"
+    templateId === "iphone-music-player-v5"
     ? 100
     : 0;
 }

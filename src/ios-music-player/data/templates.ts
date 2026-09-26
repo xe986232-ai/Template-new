@@ -901,138 +901,22 @@ export const TEMPLATES: Template[] = [
     lyricsTextLayers: [],
   },
   {
-    // Template ke-6: "iPhone Music Player V6" — duplikat persis dari V4
-    // (assets & config identik, tinggal dikustomisasi belakangan). Layout & asset dikirim (LAYOUT.png, FOTO Custom.png, JUDUL &ARTIST
-    // Custom.png, CARD HITAM ... opacity 35%.png), semua koordinat di
-    // bawah ini hasil ukur presisi dari bounding-box alpha channel
-    // masing2 asset (bukan estimasi manual). Bedanya dari 3 template
-    // sebelumnya: ada ikon favorit (star) di kontrol, & card default-nya
-    // dipakai di opacity 35% (bukan 100) sesuai instruksi nama file asset.
+    // Template ke-6: "iPhone Music Player V6" — SUDAH DIKOSONGKAN dari
+    // seluruh asset visual (bg/card/airplay/control/volume/dll) atas
+    // permintaan, diganti solid background polos. Struktur slot/teks/
+    // duration/progress/spectrum tetap dipertahankan (itu semua digambar
+    // dari kode, bukan file gambar) biar timeline & editor tetap jalan
+    // normal, cuma tampilannya sekarang minimal (background polos).
     id: "iphone-music-player-v6",
     name: "iPhone Music Player V6",
     duration: "0:15",
     gradientFrom: "#3A2E5C",
     gradientTo: "#0A090E",
-    previewImage: "/templates/iphone-music-player-v6/preview.jpg",
     canvasWidth: 1080,
     canvasHeight: 1920,
-    baseAssetSrc: "/templates/iphone-music-player-v6/bg.jpg",
-    baseAssetType: "image",
-    decorLayers: [
-      {
-        id: "card",
-        label: "Card Player",
-        assetSrc: "/templates/iphone-music-player-v6/card.png",
-        order: "back",
-        // Sesuai nama asli asset ("BUAT DEFAULT JADI OVACITY 35%") —
-        // defaultnya transparan 35%, beda dari 3 template lain yang 100.
-        opacity: 35,
-        adjustable: true,
-      },
-      {
-        // Dulu satu file icon.png (pill card + ikon AirPlay nempel jadi
-        // satu). Sekarang dipecah 2 asset biar opacity card-nya bisa
-        // diatur terpisah dari ikonnya (lihat "airplayLogo" di bawah) —
-        // posisi & ukuran sama persis (full-canvas 1080x1920), cuma
-        // kontennya beda: yang ini cuma pill/card-nya doang.
-        id: "airplayCard",
-        label: "Card AirPlay",
-        assetSrc: "/templates/iphone-music-player-v6/airplay-card.png",
-        order: "front",
-        // Sesuai instruksi: default card-nya di-ovacity ~17%.
-        opacity: 17,
-        adjustable: true,
-      },
-      {
-        // Ikon AirPlay-nya sendiri — posisi tetap, opacity tetap penuh
-        // (nggak ikut diredupkan bareng card di atas).
-        id: "airplayLogo",
-        label: "Ikon AirPlay",
-        assetSrc: "/templates/iphone-music-player-v6/airplay-logo.png",
-        order: "front",
-      },
-      {
-        id: "progressbar",
-        label: "Progress bar",
-        // Nggak ada di asset asli (LAYOUT.png cuma kasih kontrol +
-        // duration text, track progress-nya nggak digambar) — jadi
-        // track abu-abu ini digenerate ulang manual, posisinya diukur
-        // dari screenshot hasil jadi yang user kirim (sejajar persis
-        // sama tepi kiri/kanan teks durasi di bawahnya).
-        assetSrc: "/templates/iphone-music-player-v6/progressbar.png",
-        order: "front",
-        hideInWaveformMode: true,
-      },
-      {
-        id: "musicplayer",
-        label: "Kontrol",
-        // Cuma rewind/fast-forward — ikon pause/play tengah sudah
-        // dipecah ke layer "musicplayerCenter" sendiri (lihat di bawah)
-        // biar opacity-nya bisa diatur terpisah dari tombol rewind/skip.
-        // Opacity default full (100%), nggak diubah.
-        assetSrc: "/templates/iphone-music-player-v6/musicplayer.png",
-        order: "front",
-      },
-      {
-        // Ikon pause/play (dua batang) yang dulu nempel jadi satu file
-        // sama rewind/fast-forward di "musicplayer.png" — di-crop keluar
-        // jadi asset sendiri biar opacity-nya independen dari 2 ikon
-        // lain. Posisi sama persis (full-canvas 1080x1920). Opacity
-        // default full, nggak diredupin.
-        id: "musicplayerCenter",
-        label: "Tombol Pause/Play",
-        assetSrc: "/templates/iphone-music-player-v6/musicplayer-center.png",
-        order: "front",
-        adjustable: true,
-        // Efek "abis diklik" pas video baru mulai (1 detik pertama
-        // doang, nggak loop) — anchor diukur dari bounding-box alpha
-        // musicplayer-center.png (pusat tombol asli, bukan tengah canvas).
-        // Ditekan DALAM (scale ~0.68) & mantul kenyal jauh ngelewatin
-        // scale 1 sebelum settle, biar kesan "diklik"-nya lebih kerasa.
-        pressAnimation: {
-          anchorXPercent: 50.09,
-          anchorYPercent: 71.43,
-          durationSec: 1.0,
-        },
-      },
-      {
-        // Dulu isinya star + volume (icon speaker kiri/kanan + bar).
-        // Di-crop ulang jadi cuma batang volume-nya doang — ikon star
-        // & kedua speaker udah dihapus dari asset ini. Posisi bar
-        // tetap sama persis (full-canvas 1080x1920), opacity tetap 10%.
-        id: "layout",
-        label: "Volume bar (redup)",
-        assetSrc: "/templates/iphone-music-player-v6/layout.png",
-        order: "front",
-        opacity: 10,
-        adjustable: true,
-      },
-      {
-        // Track volume yang keliatan jelas — ditaruh di atas layer
-        // "layout" biar nutupin track volume yang ikut ke-redupin di
-        // sana (opacity 10%). Posisi udah pas nempel sejajar sama
-        // track volume redup di bawahnya (full-canvas 1080x1920, sama
-        // kayak layer lain). Opacity full, nggak diredupin.
-        id: "volume",
-        label: "Volume bar",
-        assetSrc: "/templates/iphone-music-player-v6/volume.png",
-        order: "front",
-        adjustable: true,
-      },
-      {
-        // Asset baru yang misahin ikon star (favorit) + kedua ikon
-        // speaker (kiri/kanan) — batang volume-nya sendiri udah ada di
-        // layer "volume"/"layout" terpisah, jadi asset ini cuma isi
-        // star & speaker doang. Posisi sama persis (full-canvas
-        // 1080x1920). Opacity default 40%.
-        id: "starSpeaker",
-        label: "Star & Speaker",
-        assetSrc: "/templates/iphone-music-player-v6/star-speaker.png",
-        order: "front",
-        opacity: 40,
-        adjustable: true,
-      },
-    ],
+    // SENGAJA tanpa baseAssetSrc/decorLayers — semua asset gambar template
+    // ini sudah dihapus. Background sekarang solid warna polos.
+    solidBackground: "#000000",
     slots: [
       {
         id: "sampul",
@@ -1045,7 +929,6 @@ export const TEMPLATES: Template[] = [
         startSec: 0,
         endSec: 15,
         radius: 36,
-        sampleSrc: "/templates/iphone-music-player-v6/sample-cover.jpg",
       },
       {
         id: "audio1",
@@ -1080,25 +963,6 @@ export const TEMPLATES: Template[] = [
         align: "left",
         maxLength: 30,
       },
-      {
-        // Teks nama device di badge AirPlay (dulu "NyxVoid's" nempel
-        // permanen di icon.png). Sekarang textnya dipisah jadi textLayer
-        // sendiri biar bisa di-custom user — icon.png cuma nyisain pill +
-        // ikon AirPlay-nya aja (bagian teksnya sudah dibersihkan/dihapus
-        // dari asset). Posisi diukur dari bounding-box asli huruf
-        // "NyxVoid's" di icon.png (x mulai persis setelah ikon+jarak,
-        // y center sejajar tengah pill).
-        id: "airplayDevice",
-        label: "Nama Perangkat AirPlay",
-        defaultText: "NyxVoid's",
-        x: 46.5,
-        y: 82.86,
-        fontSize: 28,
-        fontWeight: 500,
-        color: "#FFFFFF",
-        align: "left",
-        maxLength: 20,
-      },
     ],
     durationLayer: {
       currentX: 16.2,
@@ -1108,8 +972,6 @@ export const TEMPLATES: Template[] = [
       fontSize: 30,
       fontWeight: 500,
       color: "rgba(255,255,255,0.7)",
-      // Angka kanan ikut gerak (mundur "-M:SS" tiap detik) bukan total
-      // durasi diam, sesuai gaya Apple Music/Spotify.
       countdown: true,
     },
     progressLayer: {
@@ -1119,26 +981,6 @@ export const TEMPLATES: Template[] = [
       thickness: 18,
       color: "#FFFFFF",
     },
-    // Ikon spectrum/equalizer kecil di kanan judul (mirip indikator
-    // "Now Playing" iOS) — animasinya ngikutin energi audio asli
-    // (lihat drawSpectrumIndicator di lib/render.ts). Posisi disejajarkan
-    // ke baris judul (title.y = 57.47), nempel di tepi kanan yang sama
-    // dengan ujung kanan progress bar/total durasi (x2 = 83.7) biar rapi.
-    // x di sini adalah TITIK TENGAH grup bar (drawSpectrumIndicator
-    // nge-center dari x ini), jadi dikurangi setengah lebar total grup
-    // (barCount*barWidth + (barCount-1)*gap, dikonversi ke % lebar
-    // canvas 1080px) supaya tepi KANAN grup pas nempel di 83.7, bukan
-    // titik tengahnya — kalau barCount/barWidth/gap diubah, x WAJIB
-    // dihitung ulang pakai rumus yang sama biar nggak nongol keluar card
-    // lagi (lihat riwayat commit fix sebelumnya).
-    //
-    // 6 batang (bukan 4) — PHASE_OFFSETS_SEC & WEIGHTS di render.ts
-    // emang udah disiapin 6 elemen dari awal (masing2 "mengintip" titik
-    // waktu & bobot beda), jadi barCount=6 ini pas manfaatin full variasi
-    // gerakannya, bukan cuma kepotong 4 pertama. barWidth dikecilin
-    // (6->4px) & maxHeight/minHeight dinaikin (30/7 -> 38/9px) biar tiap
-    // batang keliatan lebih ramping & "menjulang", bukan gemuk-pendek.
-    // Warna putih redup (bukan putih penuh) sesuai referensi tampilan asli.
     spectrumLayer: {
       x: 81.7,
       y: 57.6,
