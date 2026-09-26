@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, Sparkles, Music2, Image as ImageIcon, SlidersHorizontal, Download, Repeat, Type } from 'lucide-react';
 import Ios26MusicPlayerWidget, {
@@ -16,6 +16,58 @@ import {
   type EditorTabDef,
 } from '../../components/editor/TemplateEditorTabs';
 import { tokens } from '../../designTokens';
+
+// Rasio canvas resmi widget ini: 9:16 (potret) -- SAMA kayak default semua
+// template lain (lihat CanvasRatio "9:16" di ios-music-player/Editor.tsx &
+// QuickEditScreen.tsx, dan CANVAS_RATIOS di pages/editor/EditorTheme1.tsx).
+// Widget IOS 26 cuma SVG hand-drawn potret tetap (viewBox 450x920, gak bisa
+// reflow ke landscape), jadi TIDAK ada switcher 16:9/4:5 kayak template
+// lain -- cuma satu rasio ini yang dipertahanin bener.
+const IOS26_CANVAS_RATIO = 9 / 16; // width / height
+
+/** Ngukur ruang yang beneran available di dalam `areaRef` (dikurangin
+ *  padding-nya) lewat ResizeObserver, terus hitung ukuran boks (px) yang
+ *  "contain-fit" ke IOS26_CANVAS_RATIO -- lebar & tinggi SELALU proporsional
+ *  ke rasio target, gak pernah kepotong/gepeng.
+ *
+ *  Kenapa gak cukup CSS `aspect-ratio` + `max-w`/`max-h` polos: begitu DUA
+ *  batas itu (lebar & tinggi) sama-sama kena di viewport tertentu, browser
+ *  nge-resolve dengan TETAP pertahanin salah satu batas (biasanya tinggi
+ *  penuh) terus lebar di-crop ke sisa ruang TANPA nge-recompute tinggi
+ *  biar rasionya bener -- boksnya jadi "ngawur" (gepeng/kepanjangan),
+ *  persis bug yang sebelumnya kejadian di sini (lihat catatan panjang
+ *  previewBoxSize di ios-music-player/Editor.tsx buat masalah yang sama). */
+function useContainFitFrame(ratio: number) {
+  const areaRef = useRef<HTMLDivElement | null>(null);
+  const [size, setSize] = useState<{ width: number; height: number } | null>(null);
+
+  useEffect(() => {
+    const el = areaRef.current;
+    if (!el) return;
+
+    const compute = () => {
+      const cs = getComputedStyle(el);
+      const availW = el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      const availH = el.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+      if (availW <= 0 || availH <= 0) return;
+
+      let w = availW;
+      let h = w / ratio;
+      if (h > availH) {
+        h = availH;
+        w = h * ratio;
+      }
+      setSize({ width: Math.round(w), height: Math.round(h) });
+    };
+
+    compute();
+    const ro = new ResizeObserver(compute);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [ratio]);
+
+  return { areaRef, size };
+}
 
 // Halaman berdiri sendiri buat template "IOS 26 Music Player": widget
 // Control Center + Music Player asli (SVG hand-drawn, lihat
@@ -37,6 +89,11 @@ export default function Ios26MusicPlayerPage() {
   const [activeTab, setActiveTab] = useState<Ios26EditorTab | null>(null);
   const [exportNotice, setExportNotice] = useState(false);
   const widgetWrapRef = useRef<HTMLDivElement>(null);
+  // Boks bingkai preview & editor -- ukurannya dihitung manual (lihat
+  // useContainFitFrame di atas) biar SELALU beneran 9:16, gak lagi pakai
+  // max-w/max-h tebak-tebakan yang beda sendiri antara mode preview & editor.
+  const { areaRef: previewFrameAreaRef, size: previewFrameSize } = useContainFitFrame(IOS26_CANVAS_RATIO);
+  const { areaRef: editorFrameAreaRef, size: editorFrameSize } = useContainFitFrame(IOS26_CANVAS_RATIO);
   // Handle imperatif ke widget -- dipakai baris <PlaybackBar> bersama di
   // bawah preview buat togglePlay()/seek() ASLI (lihat Widget.tsx), bukan
   // tiruan state terpisah.
@@ -134,8 +191,15 @@ export default function Ios26MusicPlayerPage() {
           </div>
         </div>
 
-        <div className="relative z-0 flex min-h-0 flex-1 items-center justify-center overflow-hidden px-4 py-2">
-          <div className="relative flex h-full max-h-[640px] w-full max-w-[420px] items-center justify-center overflow-hidden rounded-3xl border border-black bg-black">
+        <div ref={previewFrameAreaRef} className="relative z-0 flex min-h-0 flex-1 items-center justify-center overflow-hidden px-4 py-2">
+          <div
+            className="relative flex items-center justify-center overflow-hidden rounded-3xl border border-black bg-black"
+            style={
+              previewFrameSize
+                ? { width: previewFrameSize.width, height: previewFrameSize.height }
+                : { width: '100%', maxWidth: 420, aspectRatio: '9 / 16' }
+            }
+          >
             <Ios26MusicPlayerWidget activeTab={null} />
           </div>
         </div>
@@ -227,12 +291,18 @@ export default function Ios26MusicPlayerPage() {
       {/* Preview widget, dibingkai glow ungu ala referensi iOS 26 (screenshot
           editor V4 juga punya latar bergradasi di belakang frame HP). */}
       <div
+        ref={editorFrameAreaRef}
         className="relative z-0 flex min-h-0 flex-1 items-center justify-center overflow-hidden px-6 py-2"
         style={{ background: 'radial-gradient(120% 90% at 50% 30%, rgba(139,147,240,0.35), rgba(0,0,0,0) 65%)' }}
       >
         <div
           ref={widgetWrapRef}
-          className="relative flex h-full max-h-[560px] w-full max-w-[300px] items-center justify-center overflow-hidden rounded-[2.5rem] border border-white/10 bg-black"
+          className="relative flex items-center justify-center overflow-hidden rounded-[2.5rem] border border-white/10 bg-black"
+          style={
+            editorFrameSize
+              ? { width: editorFrameSize.width, height: editorFrameSize.height }
+              : { width: '100%', maxWidth: 300, aspectRatio: '9 / 16' }
+          }
         >
           <Ios26MusicPlayerWidget
             ref={widgetApiRef}
