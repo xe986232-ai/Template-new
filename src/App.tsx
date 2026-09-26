@@ -3,7 +3,6 @@ import HomePage from './pages/home/HomePage'
 import DawMockupPage from './pages/template/DawMockupPage'
 import EditorPage from './pages/editor/EditorPage'
 import IosMusicPlayerApp from './ios-music-player/IosMusicPlayerApp'
-import Ios26MusicPlayerPage from './pages/template/Ios26MusicPlayerPage'
 import SmoothScroll from './SmoothScroll'
 import AnimatedRoutes from './motion/AnimatedRoutes'
 import { useFlmProject } from './useFlmProject'
@@ -43,10 +42,14 @@ export default function App() {
                 (gallery <-> editor) mandiri, gak nyentuh state flmProject. */}
             <Route path="/template/ios-music-player" element={<IosMusicPlayerApp />} />
 
-            {/* Template baru "IOS 26 Music Player" -- halaman preview mandiri
-                (widget interaktif + tombol Lanjutan buat customize), sengaja
-                gak numpang di <Editor>/render engine template lama di atas. */}
-            <Route path="/template/ios26-music-player" element={<Ios26MusicPlayerPage />} />
+            {/* "IOS 26 Music Player" sekarang JADI SALAH SATU kartu di dalam
+                /template/ios-music-player (lihat data/templates.ts) --
+                bukan halaman/route sendiri lagi. Route lama tetap di-redirect
+                ke gallery biar link/bookmark lama gak 404. */}
+            <Route
+              path="/template/ios26-music-player"
+              element={<Navigate to="/template/ios-music-player" replace />}
+            />
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
