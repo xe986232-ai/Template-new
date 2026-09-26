@@ -857,10 +857,13 @@ export const TEMPLATES: Template[] = [
     },
   },
   {
-    // Template ke-6: "BIJI PLER" — masih tanpa decorLayers/textLayers/
-    // durationLayer/progressLayer/spectrumLayer (belum dikustom apa-apa).
-    // Satu-satunya isi: baseAssetSrc, satu gambar full-canvas (1080x1920,
-    // lihat public/templates/biji-pler/bg.jpg) jadi background dasarnya.
+    // Template ke-6: "BIJI PLER" — gaya Control Center iOS (widget "Now
+    // Playing" di kartu kanan atas). bg.jpg adalah screenshot Control
+    // Center utuh; kotak hitam & teks "Track"/"Artist" placeholder bawaan
+    // screenshot sudah dibersihkan (di-inpaint) dari gambarnya sendiri,
+    // supaya slot foto sampul & textLayers di bawah ini yang gantiin —
+    // posisinya diukur manual dari widget itu sendiri (bukan nyontek
+    // koordinat template lain), biar pas nempel di kartu musiknya.
     id: "biji-pler",
     name: "BIJI PLER",
     duration: "0:15",
@@ -874,8 +877,16 @@ export const TEMPLATES: Template[] = [
         id: "sampul",
         type: "image",
         label: "Foto sampul",
+        // Kotak "artwork" widget Now Playing, pojok kiri-atas kartu kanan
+        // (diukur dari bg.jpg: ±590,260 s/d ±717,388 dari kanvas 1080x1920).
+        x: 54.63,
+        y: 13.54,
+        width: 11.76,
+        height: 6.67,
         startSec: 0,
         endSec: 15,
+        radius: 28,
+        sampleSrc: "/templates/biji-pler/sample-cover.jpg",
       },
       {
         id: "audio1",
@@ -883,6 +894,35 @@ export const TEMPLATES: Template[] = [
         label: "Musik latar",
         startSec: 0,
         endSec: 15,
+      },
+    ],
+    // Judul lagu & nama artist widget Now Playing — nempel persis di
+    // posisi placeholder "Track"/"Artist" bawaan screenshot (yang sudah
+    // dibersihkan dari bg.jpg), rata kiri sejajar tepi kiri artwork.
+    textLayers: [
+      {
+        id: "title",
+        label: "Judul lagu",
+        defaultText: "Judul Lagu",
+        x: 54.63,
+        y: 22.19,
+        fontSize: 32,
+        fontWeight: 600,
+        color: "rgba(255,255,255,0.92)",
+        align: "left",
+        maxLength: 24,
+      },
+      {
+        id: "artist",
+        label: "Artist",
+        defaultText: "Nama Artist",
+        x: 54.63,
+        y: 24.30,
+        fontSize: 30,
+        fontWeight: 500,
+        color: "rgba(255,255,255,0.6)",
+        align: "left",
+        maxLength: 24,
       },
     ],
   },
