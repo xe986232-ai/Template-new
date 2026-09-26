@@ -104,8 +104,8 @@ export default function Ios26MusicPlayerPage() {
   // rasio), PERSIS kayak canvas preview V4 (QuickEditScreen), margin di
   // sekeliling cukup dari padding container (px-4/px-6), bukan dari
   // fillFactor < 1 lagi.
-  const { areaRef: previewFrameAreaRef, size: previewFrameSize } = useContainFitFrame(IOS26_CANVAS_RATIO, 0.7);
-  const { areaRef: editorFrameAreaRef, size: editorFrameSize } = useContainFitFrame(IOS26_CANVAS_RATIO, 0.7);
+  const { areaRef: previewFrameAreaRef, size: previewFrameSize } = useContainFitFrame(IOS26_CANVAS_RATIO, 1);
+  const { areaRef: editorFrameAreaRef, size: editorFrameSize } = useContainFitFrame(IOS26_CANVAS_RATIO, 1);
   // Handle imperatif ke widget -- dipakai baris <PlaybackBar> bersama di
   // bawah preview buat togglePlay()/seek() ASLI (lihat Widget.tsx), bukan
   // tiruan state terpisah.
@@ -212,7 +212,9 @@ export default function Ios26MusicPlayerPage() {
                 : { width: '100%', maxWidth: 358, aspectRatio: '450 / 920' }
             }
           >
-            <Ios26MusicPlayerWidget activeTab={null} />
+            <div className="flex h-full w-full items-center justify-center" style={{ transform: 'scale(0.7)' }}>
+              <Ios26MusicPlayerWidget activeTab={null} />
+            </div>
           </div>
         </div>
 
@@ -316,18 +318,20 @@ export default function Ios26MusicPlayerPage() {
               : { width: '100%', maxWidth: 255, aspectRatio: '450 / 920' }
           }
         >
-          <Ios26MusicPlayerWidget
-            ref={widgetApiRef}
-            activeTab={activeTab}
-            activeTabLabel={activeTabLabel}
-            onClose={() => setActiveTab(null)}
-            onSelectCover={() => {
-              setSelectedSlot('cover');
-              setActiveTab(null);
-            }}
-            onPlaybackState={setPlayback}
-            onCoverChange={setCoverUrl}
-          />
+          <div className="flex h-full w-full items-center justify-center" style={{ transform: 'scale(0.7)' }}>
+            <Ios26MusicPlayerWidget
+              ref={widgetApiRef}
+              activeTab={activeTab}
+              activeTabLabel={activeTabLabel}
+              onClose={() => setActiveTab(null)}
+              onSelectCover={() => {
+                setSelectedSlot('cover');
+                setActiveTab(null);
+              }}
+              onPlaybackState={setPlayback}
+              onCoverChange={setCoverUrl}
+            />
+          </div>
         </div>
       </div>
 
