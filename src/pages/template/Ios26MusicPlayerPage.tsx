@@ -27,8 +27,8 @@ const IOS26_CANVAS_RATIO = 9 / 16; // width / height
 
 /** Ngukur ruang yang beneran available di dalam `areaRef` (dikurangin
  *  padding-nya) lewat ResizeObserver, terus hitung ukuran boks (px) yang
- *  "contain-fit" ke IOS26_CANVAS_RATIO -- lebar & tinggi SELALU proporsional
- *  ke rasio target, gak pernah kepotong/gepeng.
+ *  "contain-fit" ke `ratio` -- lebar & tinggi SELALU proporsional ke rasio
+ *  target, gak pernah kepotong/gepeng.
  *
  *  Kenapa gak cukup CSS `aspect-ratio` + `max-w`/`max-h` polos: begitu DUA
  *  batas itu (lebar & tinggi) sama-sama kena di viewport tertentu, browser
@@ -36,8 +36,14 @@ const IOS26_CANVAS_RATIO = 9 / 16; // width / height
  *  penuh) terus lebar di-crop ke sisa ruang TANPA nge-recompute tinggi
  *  biar rasionya bener -- boksnya jadi "ngawur" (gepeng/kepanjangan),
  *  persis bug yang sebelumnya kejadian di sini (lihat catatan panjang
- *  previewBoxSize di ios-music-player/Editor.tsx buat masalah yang sama). */
-function useContainFitFrame(ratio: number) {
+ *  previewBoxSize di ios-music-player/Editor.tsx buat masalah yang sama).
+ *
+ *  `fillFactor` (0..1, default 1) -- boks di-susutin proporsional dari
+ *  ruang available SEBELUM di-contain-fit, biar ada spasi/margin di
+ *  sekeliling kayak kartu preview template lain (V4), bukan maksa
+ *  ngisi penuh area flex-nya (yang bikin kartu keliatan "kebesaran"
+ *  nempel ke atas-bawah walau rasionya udah bener). */
+function useContainFitFrame(ratio: number, fillFactor = 1) {
   const areaRef = useRef<HTMLDivElement | null>(null);
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
 
@@ -47,8 +53,8 @@ function useContainFitFrame(ratio: number) {
 
     const compute = () => {
       const cs = getComputedStyle(el);
-      const availW = el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-      const availH = el.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+      const availW = (el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)) * fillFactor;
+      const availH = (el.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom)) * fillFactor;
       if (availW <= 0 || availH <= 0) return;
 
       let w = availW;
@@ -64,7 +70,7 @@ function useContainFitFrame(ratio: number) {
     const ro = new ResizeObserver(compute);
     ro.observe(el);
     return () => ro.disconnect();
-  }, [ratio]);
+  }, [ratio, fillFactor]);
 
   return { areaRef, size };
 }
@@ -92,8 +98,11 @@ export default function Ios26MusicPlayerPage() {
   // Boks bingkai preview & editor -- ukurannya dihitung manual (lihat
   // useContainFitFrame di atas) biar SELALU beneran 9:16, gak lagi pakai
   // max-w/max-h tebak-tebakan yang beda sendiri antara mode preview & editor.
-  const { areaRef: previewFrameAreaRef, size: previewFrameSize } = useContainFitFrame(IOS26_CANVAS_RATIO);
-  const { areaRef: editorFrameAreaRef, size: editorFrameSize } = useContainFitFrame(IOS26_CANVAS_RATIO);
+  // fillFactor < 1 -- boks 9:16-nya disusutin biar ada spasi/margin di
+  // sekeliling (kayak kartu preview V4), gak nempel penuh ke atas-bawah
+  // area flex-nya walau rasionya udah bener.
+  const { areaRef: previewFrameAreaRef, size: previewFrameSize } = useContainFitFrame(IOS26_CANVAS_RATIO, 0.78);
+  const { areaRef: editorFrameAreaRef, size: editorFrameSize } = useContainFitFrame(IOS26_CANVAS_RATIO, 0.78);
   // Handle imperatif ke widget -- dipakai baris <PlaybackBar> bersama di
   // bawah preview buat togglePlay()/seek() ASLI (lihat Widget.tsx), bukan
   // tiruan state terpisah.
@@ -197,7 +206,7 @@ export default function Ios26MusicPlayerPage() {
             style={
               previewFrameSize
                 ? { width: previewFrameSize.width, height: previewFrameSize.height }
-                : { width: '100%', maxWidth: 420, aspectRatio: '9 / 16' }
+                : { width: '100%', maxWidth: 328, aspectRatio: '9 / 16' }
             }
           >
             <Ios26MusicPlayerWidget activeTab={null} />
@@ -301,7 +310,7 @@ export default function Ios26MusicPlayerPage() {
           style={
             editorFrameSize
               ? { width: editorFrameSize.width, height: editorFrameSize.height }
-              : { width: '100%', maxWidth: 300, aspectRatio: '9 / 16' }
+              : { width: '100%', maxWidth: 234, aspectRatio: '9 / 16' }
           }
         >
           <Ios26MusicPlayerWidget
