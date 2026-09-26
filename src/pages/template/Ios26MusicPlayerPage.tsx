@@ -1,8 +1,14 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, Sparkles, Music2, Image as ImageIcon, SlidersHorizontal, Download } from 'lucide-react';
+import { ChevronLeft, Sparkles, Music2, Image as ImageIcon, SlidersHorizontal, Download, Repeat, Type } from 'lucide-react';
 import Ios26MusicPlayerWidget, { type Ios26EditorTab } from '../../ios26-music-player/Widget';
-import { EditorTabBar, toggleEditorTab, type EditorTabDef } from '../../components/editor/TemplateEditorTabs';
+import {
+  EditorTabBar,
+  EditorSlotActionBar,
+  ActionButton,
+  toggleEditorTab,
+  type EditorTabDef,
+} from '../../components/editor/TemplateEditorTabs';
 import { tokens } from '../../designTokens';
 
 // Halaman berdiri sendiri buat template "IOS 26 Music Player": widget
@@ -25,10 +31,21 @@ export default function Ios26MusicPlayerPage() {
   const [activeTab, setActiveTab] = useState<Ios26EditorTab | null>(null);
   const [exportNotice, setExportNotice] = useState(false);
   const widgetWrapRef = useRef<HTMLDivElement>(null);
+  // "Slot" yang lagi kepilih -- niru selectedSlot di QuickEditScreen (V4).
+  // Satu-satunya slot media yang ada di widget ini baru cover/album art,
+  // makanya union-nya cuma 'cover' | null (bukan id dinamis kayak V4 yang
+  // punya banyak slot/klip).
+  const [selectedSlot, setSelectedSlot] = useState<'cover' | null>(null);
+
+  function clearSlotSelection() {
+    setSelectedSlot(null);
+    setActiveTab(null);
+  }
 
   // "Tambah musik" di header -- langsung buka tab Audio, lalu trigger
   // tombol upload di dalam sheet-nya (widget yang pegang input file-nya).
   const handleTambahMusik = () => {
+    setSelectedSlot(null);
     setActiveTab('audio');
     requestAnimationFrame(() => {
       widgetWrapRef.current?.querySelector<HTMLButtonElement>('#uploadAudioBtn')?.click();
@@ -40,7 +57,22 @@ export default function Ios26MusicPlayerPage() {
   // (tetep kebuka). Logic-nya dibagi di komponen editor generik, bukan
   // ditulis manual di sini, biar template lain pakai perilaku yang sama.
   const handleTabClick = (id: Ios26EditorTab) => {
+    setSelectedSlot(null);
     setActiveTab((cur) => toggleEditorTab(cur, id));
+  };
+
+  // "Ganti" di baris aksi kontekstual -- trigger tombol upload cover yang
+  // udah ada di panel Media (persis pola handleTambahMusik di atas, reuse
+  // tombol yang sama, gak bikin input file baru).
+  const handleGantiCover = () => {
+    widgetWrapRef.current?.querySelector<HTMLButtonElement>('#uploadArtBtn')?.click();
+  };
+
+  // "Teks" di baris aksi kontekstual -- judul/artis kartu ini emang udah
+  // jadi bagian dari sheet "Media" (belum dipisah sheet sendiri kayak V4),
+  // jadi tinggal buka sheet itu.
+  const handleEditTeks = () => {
+    setActiveTab((cur) => (cur === 'media' ? null : 'media'));
   };
 
   if (mode === 'preview') {
@@ -174,23 +206,35 @@ export default function Ios26MusicPlayerPage() {
             activeTab={activeTab}
             activeTabLabel={activeTabLabel}
             onClose={() => setActiveTab(null)}
+            onSelectCover={() => {
+              setSelectedSlot('cover');
+              setActiveTab(null);
+            }}
           />
         </div>
       </div>
 
-      {/* Tab bar bawah -- komponen generik EditorTabBar (lihat
-          src/components/editor/TemplateEditorTabs.tsx), bukan tombol yang
-          ditulis manual lagi -- template mana pun tinggal pasang ini +
-          daftar tabs-nya sendiri. Klik tombolnya buka sheet yang isinya
-          dirender oleh Widget sendiri (lihat Ios26EditorTab & panel-group
-          di markup.ts/widget.css); klik tab yang lagi aktif (atau tombol
-          "Selesai" di header sheet) nutup sheet-nya lagi. */}
-      <EditorTabBar
-        tabs={TABS}
-        activeTab={activeTab}
-        onTabClick={handleTabClick}
-        accentColor={tokens.colors.accent}
-      />
+      {/* Baris bawah: tab bar biasa (Media/Audio/Lanjutan), ATAU begitu
+          cover diketuk langsung di preview -- baris aksi kontekstual
+          (Ganti/Teks), niru persis alur "tap slot -> Ganti/Pangkas/Latar/
+          Teks" di QuickEditScreen (V4). Kedua-duanya pakai komponen
+          bersama dari TemplateEditorTabs.tsx, gak ada yang ditulis ulang
+          dari nol buat template ini. Pangkas & Latar sengaja gak ada --
+          widget IOS 26 belum punya fitur crop/background-layer, sama
+          kayak V4 yang juga cuma nampilin tombol itu kalau fiturnya ada. */}
+      {selectedSlot === 'cover' ? (
+        <EditorSlotActionBar onBack={clearSlotSelection}>
+          <ActionButton icon={Repeat} label="Ganti" onClick={handleGantiCover} />
+          <ActionButton icon={Type} label="Teks" active={activeTab === 'media'} onClick={handleEditTeks} />
+        </EditorSlotActionBar>
+      ) : (
+        <EditorTabBar
+          tabs={TABS}
+          activeTab={activeTab}
+          onTabClick={handleTabClick}
+          accentColor={tokens.colors.accent}
+        />
+      )}
     </div>
   );
 }

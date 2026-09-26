@@ -34,10 +34,22 @@ type Props = {
   activeTabLabel?: string;
   /** Tutup sheet (dipanggil dari tombol "Selesai" di header sheet). */
   onClose?: () => void;
+  /** Cover/album art di kartu Music Player diketuk langsung -- niru alur
+   *  "tap slot -> muncul baris aksi kontekstual (Ganti/Teks)" di
+   *  QuickEditScreen (V4). Opsional: kalau gak disuplai, cover-nya cuma
+   *  bisa diganti lewat sheet "Media" seperti biasa. */
+  onSelectCover?: () => void;
 };
 
-export default function Ios26MusicPlayerWidget({ activeTab, activeTabLabel, onClose }: Props) {
+export default function Ios26MusicPlayerWidget({ activeTab, activeTabLabel, onClose, onSelectCover }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
+  // Ref, bukan langsung prop -- handler klik cover dipasang di effect
+  // mount-only ([] deps) di bawah, jadi harus baca versi terbaru callback
+  // lewat ref biar gak kena closure basi kalau parent-nya re-render.
+  const onSelectCoverRef = useRef(onSelectCover);
+  useEffect(() => {
+    onSelectCoverRef.current = onSelectCover;
+  }, [onSelectCover]);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -345,6 +357,19 @@ export default function Ios26MusicPlayerWidget({ activeTab, activeTabLabel, onCl
       };
       reader.readAsDataURL(file);
     });
+
+    // Ketuk langsung cover-nya di preview -> pilih "slot" cover, biar
+    // halaman pembungkus bisa nampilin baris aksi kontekstual (Ganti/Teks)
+    // sama kayak nge-tap klip media di V4. stopPropagation wajib biar gak
+    // kebaca stageCloseHandler (yang nutup kartu Music Player).
+    const selectCoverHandler = (e: Event) => {
+      e.stopPropagation();
+      onSelectCoverRef.current?.();
+    };
+    on(albumArtImage, 'click', selectCoverHandler);
+    on(albumArtPlaceholder, 'click', selectCoverHandler);
+    albumArtImage.style.cursor = 'pointer';
+    (albumArtPlaceholder as unknown as HTMLElement).style.cursor = 'pointer';
 
     // ==== Custom judul & artis ====
     const ctrlSongTitle = $<HTMLInputElement>('ctrlSongTitle');

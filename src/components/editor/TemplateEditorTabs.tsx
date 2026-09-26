@@ -1,4 +1,4 @@
-import { Check, type LucideIcon } from "lucide-react";
+import { Check, ChevronLeft, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
 // Dua potongan UI yang berulang di SETIAP halaman editor template
@@ -128,4 +128,73 @@ export function toggleEditorTab<Id extends string>(
   next: Id
 ): Id | null {
   return current === next ? null : next;
+}
+
+type EditorActionButtonProps = {
+  icon: LucideIcon;
+  label: string;
+  active?: boolean;
+  onClick: () => void;
+  disabled?: boolean;
+};
+
+/** Tombol kecil dipakai di baris aksi kontekstual (mis. "Ganti / Pangkas /
+ *  Latar / Teks" yang muncul begitu satu slot media diketuk) -- awalnya
+ *  cuma didefinisikan lokal di QuickEditScreen (template V4), sekarang
+ *  dipindah ke sini biar template lain (IOS 26 Control Center, dst) yang
+ *  butuh baris aksi serupa TINGGAL PAKAI komponen yang sama persis, bukan
+ *  nulis ulang tombolnya dari nol. */
+export function ActionButton({
+  icon: Icon,
+  label,
+  active,
+  onClick,
+  disabled,
+}: EditorActionButtonProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      data-ripple
+      className={`flex w-16 shrink-0 flex-col items-center gap-0.5 rounded-xl py-1 text-[10.5px] transition active:scale-90 disabled:opacity-35 ${
+        active ? "text-editor-accent" : "text-white"
+      }`}
+    >
+      <Icon size={19} strokeWidth={1.8} />
+      {label}
+    </button>
+  );
+}
+
+type EditorSlotActionBarProps = {
+  /** Balik ke tab bar biasa (tombol chevron kiri). */
+  onBack: () => void;
+  children: ReactNode;
+  className?: string;
+};
+
+/** Bungkus baris "chevron kembali + deretan ActionButton" -- dipakai buat
+ *  ganti tab bar biasa begitu satu slot/elemen media lagi kepilih. Sama
+ *  persis polanya kayak baris "Ganti/Pangkas/Latar/Teks" di QuickEditScreen
+ *  (V4), tinggal disuplai tombol-tombolnya sebagai children. */
+export function EditorSlotActionBar({ onBack, children, className = "" }: EditorSlotActionBarProps) {
+  return (
+    <div
+      className={`relative z-[60] flex shrink-0 items-center gap-1 border-t border-white/10 bg-black px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 ${className}`}
+    >
+      <button
+        type="button"
+        onClick={onBack}
+        aria-label="Kembali ke tab"
+        data-ripple
+        className="flex h-11 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 transition active:scale-90"
+      >
+        <ChevronLeft size={20} />
+      </button>
+      <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto [scrollbar-width:none]">
+        {children}
+      </div>
+    </div>
+  );
 }

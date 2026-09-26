@@ -25,10 +25,10 @@ import {
   SlidersHorizontal,
   Type,
   Video,
-  type LucideIcon,
 } from "lucide-react";
 import type { Template, TemplateSlot } from "../types";
 import type { SlotMediaState, TextValueState } from "../lib/render";
+import { ActionButton } from "../../components/editor/TemplateEditorTabs";
 
 // Layar edit RINGKAS ala mode template CapCut: muncul begitu user pencet
 // "Gunakan template", tanpa timeline. Preview + tombol putar, deretan klip
@@ -193,34 +193,10 @@ function SeekBar({
   );
 }
 
-function ActionButton({
-  icon: Icon,
-  label,
-  active,
-  onClick,
-  disabled,
-}: {
-  icon: LucideIcon;
-  label: string;
-  active?: boolean;
-  onClick: () => void;
-  disabled?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      data-ripple
-      className={`flex w-16 shrink-0 flex-col items-center gap-0.5 rounded-xl py-1 text-[10.5px] transition active:scale-90 disabled:opacity-35 ${
-        active ? "text-editor-accent" : "text-white"
-      }`}
-    >
-      <Icon size={19} strokeWidth={1.8} />
-      {label}
-    </button>
-  );
-}
+// ActionButton (tombol "Ganti/Pangkas/Latar/Teks" di baris aksi kontekstual)
+// sekarang komponen bersama -- lihat import di atas -- biar template lain
+// (mis. IOS 26 Control Center) yang butuh baris aksi serupa pakai komponen
+// yang sama persis, bukan salinan lokal kayak sebelumnya.
 
 export default function QuickEditScreen(p: Props) {
   const [tab, setTab] = useState<Tab>("media");
