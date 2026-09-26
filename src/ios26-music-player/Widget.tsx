@@ -429,7 +429,7 @@ export default function Ios26MusicPlayerWidget({ advancedOpen }: Props) {
 
   return (
     <div className="cc26-root" ref={rootRef}>
-      <div className="cc26-stage-col" dangerouslySetInnerHTML={{ __html: STAGE_MARKUP }} />
+      <div id="stage" className="cc26-stage-col stage" dangerouslySetInnerHTML={{ __html: STAGE_MARKUP }} />
       <div
         className={`cc26-panel-sheet${advancedOpen ? ' open' : ''}`}
         dangerouslySetInnerHTML={{ __html: PANELS_MARKUP }}
