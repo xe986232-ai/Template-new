@@ -1,26 +1,29 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, Sparkles, SlidersHorizontal } from 'lucide-react';
+import { ChevronLeft, Sparkles, Pencil } from 'lucide-react';
 import Ios26MusicPlayerWidget from '../../ios26-music-player/Widget';
 import { tokens } from '../../designTokens';
 
 // Halaman berdiri sendiri buat template "IOS 26 Music Player": preview
 // widget Control Center + Music Player yang interaktif (klik kartu audio
-// kanan atas buat buka Music Player), dengan tombol "Lanjutan" di bawah
-// buat customize tampilan kartu. Halaman ini SENGAJA dipisah, gak numpang
-// di <Editor> punya template lama:
-//  - belum ada timeline/lirik/preset/export (nanti aja kalau udah waktunya)
+// kanan atas buat buka Music Player), dengan tombol "Gunakan template" di
+// bawah buat masuk mode edit. Halaman ini SENGAJA dipisah, gak numpang di
+// <Editor> punya template lama:
+//  - belum ada timeline/lirik/preset/export PNG/MP4 (nanti aja kalau udah
+//    waktunya) -- yang udah ada baru ALUR EDIT-nya doang: "Gunakan
+//    template" ngebuka panel yang bagian atasnya udah bisa ganti Judul
+//    Lagu, Nama Artis, dan upload Cover/Album Art (lihat markup.ts,
+//    PANELS_MARKUP), baru di bawahnya opsi gaya kartu (radius, opacity,
+//    dll)
 //  - interaksi CC <-> Music Player masih klik manual, bukan auto-transisi
 //    ala timeline video (itu nanti bagian dari engine export)
 //
-// Chrome-nya (pill "(PREVIEW TEMPLATE)", badge nama, tombol) sengaja
-// dibikin niru persis TemplatePreview.tsx punya template iOS Music Player
-// biasa, biar kelihatan satu keluarga tampilan meski di sini belum ada
-// tombol "Gunakan template" (fiturnya belum ada) -- cuma bajunya doang
-// yang disamain, bukan fungsinya.
+// Chrome-nya (pill "(PREVIEW TEMPLATE)", badge nama, tombol) niru persis
+// TemplatePreview.tsx punya template iOS Music Player biasa, biar
+// kelihatan satu keluarga tampilan.
 export default function Ios26MusicPlayerPage() {
   const navigate = useNavigate();
-  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
 
   return (
     <div
@@ -54,14 +57,15 @@ export default function Ios26MusicPlayerPage() {
           kerasa satu bahasa visual sama kartu template lain di galeri. */}
       <div className="relative z-0 flex min-h-0 flex-1 items-center justify-center overflow-hidden px-4 py-2">
         <div className="relative flex h-full max-h-[640px] w-full max-w-[420px] items-center justify-center overflow-hidden rounded-3xl border border-black bg-black">
-          <Ios26MusicPlayerWidget advancedOpen={advancedOpen} />
+          <Ios26MusicPlayerWidget advancedOpen={editOpen} />
         </div>
       </div>
 
-      {/* Overlay bawah -- badge nama + chip status + tombol "Lanjutan",
-          gayanya niru bagian bawah TemplatePreview.tsx (nama pill +
-          info chip + tombol aksi pill), cuma isinya beda: di sini tombol
-          bukanya panel customize, bukan masuk Editor. */}
+      {/* Overlay bawah -- badge nama + chip status + tombol "Gunakan
+          template", gayanya niru bagian bawah TemplatePreview.tsx (nama
+          pill + info chip + tombol aksi pill). Bedanya sama template
+          lain: tombol ini ngebuka panel edit di halaman yang sama
+          (belum masuk Editor/export terpisah). */}
       <div className="relative z-10 flex flex-col items-start gap-2 px-4 pb-[max(0.875rem,env(safe-area-inset-bottom))] pt-1">
         <h2
           className="max-w-full truncate rounded-lg border border-black px-2.5 py-1 text-sm font-bold leading-tight text-black"
@@ -89,19 +93,19 @@ export default function Ios26MusicPlayerPage() {
 
         <button
           type="button"
-          onClick={() => setAdvancedOpen((v) => !v)}
-          aria-pressed={advancedOpen}
+          onClick={() => setEditOpen((v) => !v)}
+          aria-pressed={editOpen}
           data-ripple
           className="mt-1 flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-black text-sm font-bold text-black transition duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
           style={{ backgroundColor: tokens.colors.accent, fontFamily: tokens.fonts.heading }}
         >
-          <SlidersHorizontal size={16} strokeWidth={advancedOpen ? 2.4 : 2} />
-          {advancedOpen ? 'Tutup panel lanjutan' : 'Lanjutan'}
+          <Pencil size={16} strokeWidth={editOpen ? 2.4 : 2} />
+          {editOpen ? 'Tutup mode edit' : 'Gunakan template'}
         </button>
       </div>
 
-      {advancedOpen && (
-        <div className="fixed inset-0 z-40" onClick={() => setAdvancedOpen(false)} />
+      {editOpen && (
+        <div className="fixed inset-0 z-40" onClick={() => setEditOpen(false)} />
       )}
     </div>
   );
