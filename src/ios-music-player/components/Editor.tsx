@@ -1,5 +1,12 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
+// BIJI PLER (id: "biji-pler") sengaja "minjem" komponen widget IOS 26 asli
+// (bukan gambar statis) buat isi kontennya -- lihat pemakaian di preview
+// canvas: widget di-scale ("contain") biar pas masuk rangka
+// canvasWidth/canvasHeight template (TETAP 1080x1920, gak diubah), jadi
+// kalau konten widget lebih "panjang"/beda rasio dari canvas, yang
+// nyesuain itu skalanya si widget -- BUKAN canvas-nya.
+import Ios26MusicPlayerWidget from "../../ios26-music-player/Widget";
 import {
   Video,
   Music,
@@ -4476,7 +4483,19 @@ export default function Editor({
             height: previewBoxSize?.height ?? "100%",
           })}
         >
-          {template.baseAssetSrc || template.solidBackground ? (
+          {template.id === "biji-pler" ? (
+            // Widget IOS 26 ASLI (interaktif, bukan gambar). Elemen
+            // ".stage" di dalam Widget.tsx udah didesain width:100%/
+            // height:100% ke parent-nya, dan SVG di dalamnya pakai
+            // preserveAspectRatio (xMidYMid meet) bawaan -- jadi otomatis
+            // "contain"-fit sendiri ke box ini. Box-nya sendiri ukurannya
+            // ngikut previewBoxSize, yang dihitung dari canvasWidth/
+            // canvasHeight template (rangka dasar BIJI PLER, TETAP 1080x
+            // 1920, gak disentuh) -- yang nyesuain cuma skala widget-nya.
+            <div className="relative h-full w-full overflow-hidden bg-black">
+              <Ios26MusicPlayerWidget activeTab={null} />
+            </div>
+          ) : template.baseAssetSrc || template.solidBackground ? (
             <canvas
               ref={canvasRef}
               onClick={handleCanvasClick}
