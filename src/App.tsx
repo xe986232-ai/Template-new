@@ -3,7 +3,6 @@ import HomePage from './pages/home/HomePage'
 import DawMockupPage from './pages/template/DawMockupPage'
 import EditorPage from './pages/editor/EditorPage'
 import IosMusicPlayerApp from './ios-music-player/IosMusicPlayerApp'
-import Ios26MusicPlayerPage from './pages/template/Ios26MusicPlayerPage'
 import SmoothScroll from './SmoothScroll'
 import AnimatedRoutes from './motion/AnimatedRoutes'
 import { useFlmProject } from './useFlmProject'
@@ -42,11 +41,6 @@ export default function App() {
                 (5 varian: lockscreen, glass, black, v4, v5). App-nya sendiri
                 (gallery <-> editor) mandiri, gak nyentuh state flmProject. */}
             <Route path="/template/ios-music-player" element={<IosMusicPlayerApp />} />
-
-            {/* Template baru "IOS 26 Music Player" -- halaman preview mandiri
-                (widget interaktif + tombol Lanjutan buat customize), sengaja
-                gak numpang di <Editor>/render engine template lama di atas. */}
-            <Route path="/template/ios26-music-player" element={<Ios26MusicPlayerPage />} />
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
