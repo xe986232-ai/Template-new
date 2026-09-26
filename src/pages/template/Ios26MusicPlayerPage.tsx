@@ -56,7 +56,19 @@ export default function Ios26MusicPlayerPage() {
   // yang lagi aktif -> tutup sheet-nya; klik tab lain -> ganti isi sheet
   // (tetep kebuka). Logic-nya dibagi di komponen editor generik, bukan
   // ditulis manual di sini, biar template lain pakai perilaku yang sama.
+  //
+  // Tab "Media" DIKECUALIKAN dari situ: sekarang gak langsung buka sheet
+  // form (Judul/Artis/Font/Cover), tapi munculin baris aksi kontekstual
+  // Ganti/Teks -- sama kayak pas cover diketuk langsung di preview (lihat
+  // onSelectCover di bawah). Dua jalur beda buat hasil yang sama, biar
+  // user yang gak sadar bisa ketuk cover-nya juga tetep nemu lewat tombol
+  // "Media" di tab bar.
   const handleTabClick = (id: Ios26EditorTab) => {
+    if (id === 'media') {
+      setActiveTab(null);
+      setSelectedSlot((cur) => (cur === 'cover' ? null : 'cover'));
+      return;
+    }
     setSelectedSlot(null);
     setActiveTab((cur) => toggleEditorTab(cur, id));
   };
