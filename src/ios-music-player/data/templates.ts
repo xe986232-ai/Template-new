@@ -926,39 +926,10 @@ export const TEMPLATES: Template[] = [
       {
         id: "card",
         label: "Card Player",
-        // Layer asli "01-cardbgrect.png" itu kaca putih translucent
-        // (~20% opacity) yang harusnya menembus & memblur apa pun di
-        // belakangnya (frosted-glass, mirip Now Playing card iOS) — efek
-        // blur itu TIDAK ikut ter-convert ke PNG statis (lihat README
-        // asset: "data-figma-bg-blur-radius diabaikan"). Kalau cuma
-        // ditumpuk sebagai PNG datar di atas background gelap, hasilnya
-        // keliatan abu-abu pekat, bukan kaca terang — makanya di sini
-        // dipasang `liquidGlass` biar dirender LIVE nembus & merefraksi
-        // background/foto di belakangnya (sama seperti card di template
-        // "iPhone Music Player Glass"). assetSrc tetap ada sebagai
-        // fallback PNG kalau browser tidak dukung filter SVG di canvas.
         assetSrc: "/templates/iphone-music-player-v6/card.png",
         order: "back",
         opacity: 100,
         adjustable: true,
-        liquidGlass: {
-          // Bounding box card + radius sudut, diukur langsung dari alpha
-          // channel "01-cardbgrect.png" (radius ≈65px di frame native
-          // 336x600 → ≈208px di kanvas 1080x1920).
-          x: 0,
-          y: 0,
-          width: 100,
-          height: 100,
-          cornerRadius: 208,
-          settings: {
-            mode: "standard",
-            displacementScale: 70,
-            blurAmount: 0.5,
-            saturation: 140,
-            aberrationIntensity: 2,
-            overLight: false,
-          },
-        },
       },
       {
         id: "progressbar",
