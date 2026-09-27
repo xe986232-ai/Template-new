@@ -901,16 +901,19 @@ export const TEMPLATES: Template[] = [
     lyricsTextLayers: [],
   },
   {
-    // Template ke-6: "iPhone Music Player V6" — DIKOSONGKAN LAGI dari
-    // seluruh asset visual (card/progressbar/musicplayer/volume/airplay/
-    // preview/sample-cover, semua file di folder public/templates/
-    // iphone-music-player-v6/ sudah dihapus) atas permintaan, balik jadi
-    // cangkang polos. Cuma asset-nya yang dibuang — rangka canvas
-    // (1080x1920), slot foto+audio, textLayers judul/artist, durationLayer
-    // & progressLayer TETAP dipertahankan apa adanya (semua itu digambar
-    // dari kode/canvas, bukan file gambar), jadi timeline & editor tetap
-    // jalan normal, cuma tampilannya sekarang solid background polos
-    // tanpa dekorasi apapun.
+    // Template ke-6: "iPhone Music Player V6" — asset visual dipasang lagi
+    // secara PERMANEN dari asset pack "mpios26riz-layers-png" (folder
+    // music-player/, 24 layer PNG + MANIFEST.json posisi tiap layer).
+    // Layer-layer itu digabung (compose_layers.py) jadi beberapa PNG
+    // full-canvas (1080x1920, transparan di luar bentuknya) yang disimpan
+    // permanen di public/templates/iphone-music-player-v6/ — BUKAN cuma
+    // preview sementara, jadi jangan dihapus lagi kayak revisi sebelumnya.
+    // Layer yang isinya konten dinamis (album art, judul/artist, waktu,
+    // nama device AirPlay) SENGAJA tidak diikutkan sebagai PNG statis,
+    // karena itu semua sudah digambar dari kode lewat slots/textLayers/
+    // durationLayer di bawah — motif hitbox (playPauseHit/progressHit)
+    // & state alternatif (pauseicon) juga di-skip karena non-visual/tidak
+    // dipakai di render statis.
     id: "iphone-music-player-v6",
     name: "iPhone Music Player V6",
     duration: "0:15",
@@ -918,10 +921,56 @@ export const TEMPLATES: Template[] = [
     gradientTo: "#0A090E",
     canvasWidth: 1080,
     canvasHeight: 1920,
-    // SENGAJA tanpa baseAssetSrc/decorLayers/previewImage — semua asset
-    // gambar template ini sudah dihapus. Background sekarang solid warna
-    // polos.
     solidBackground: "#000000",
+    decorLayers: [
+      {
+        id: "card",
+        label: "Card Player",
+        assetSrc: "/templates/iphone-music-player-v6/card.png",
+        order: "back",
+        opacity: 100,
+        adjustable: true,
+      },
+      {
+        id: "progressbar",
+        label: "Progress bar",
+        assetSrc: "/templates/iphone-music-player-v6/progressbar.png",
+        order: "front",
+        hideInWaveformMode: true,
+      },
+      {
+        id: "musicplayer",
+        label: "Kontrol",
+        assetSrc: "/templates/iphone-music-player-v6/musicplayer.png",
+        order: "front",
+      },
+      {
+        id: "volume",
+        label: "Volume bar",
+        assetSrc: "/templates/iphone-music-player-v6/volume.png",
+        order: "front",
+        adjustable: true,
+      },
+      {
+        id: "airplayCard",
+        label: "Card AirPlay",
+        assetSrc: "/templates/iphone-music-player-v6/airplay-card.png",
+        order: "front",
+        adjustable: true,
+      },
+      {
+        id: "airplayLogo",
+        label: "Ikon AirPlay",
+        assetSrc: "/templates/iphone-music-player-v6/airplay-logo.png",
+        order: "front",
+      },
+      {
+        id: "dots",
+        label: "Dots dekorasi",
+        assetSrc: "/templates/iphone-music-player-v6/dots.png",
+        order: "front",
+      },
+    ],
     slots: [
       {
         id: "sampul",
@@ -967,6 +1016,18 @@ export const TEMPLATES: Template[] = [
         color: "rgba(255,255,255,0.6)",
         align: "left",
         maxLength: 30,
+      },
+      {
+        id: "airplayDevice",
+        label: "Nama Perangkat AirPlay",
+        defaultText: "iPhone",
+        x: 47.3,
+        y: 92,
+        fontSize: 26,
+        fontWeight: 500,
+        color: "#FFFFFF",
+        align: "left",
+        maxLength: 20,
       },
     ],
     durationLayer: {
